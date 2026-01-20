@@ -1,0 +1,51 @@
+.bom-table-container {
+  overflow-x: auto;
+  max-height: 400px;
+  width: 1000px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th.mat-header-cell {
+  background: #4f5052;
+  color: #fff;
+  text-align: left;
+}
+
+td.mat-cell {
+  padding: 10px 14px;
+}
+
+tr.mat-row:hover {
+  background: #4d4b4b;
+}
+
+/* ✅ Clean spacing for footer actions */
+.bom-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.left-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.right-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.download-btn {
+  background: #4f5052;
+  color: white;
+}

@@ -21,12 +21,12 @@ export class UserService {
     private storage: ResourceStorageService;
 
     constructor(private http: HttpClient,
-                private translateService: TranslateService,
-                private toastr: ToastrService,
-                private appService: AppService,
-                private resewbApiService: ResWebApiService,
-                private resDemoService: ResDemoService,
-                private resClientService: ResClientService) {
+        private translateService: TranslateService,
+        private toastr: ToastrService,
+        private appService: AppService,
+        private resewbApiService: ResWebApiService,
+        private resDemoService: ResDemoService,
+        private resClientService: ResClientService) {
         this.storage = resewbApiService;
         if (!environment.serverEnabled || appService.isDemoApp) {
             this.storage = resDemoService;
@@ -62,7 +62,7 @@ export class UserService {
         return new Observable((observer) => {
             if (environment.serverEnabled) {
                 let header = new HttpHeaders({ 'Content-Type': 'application/json' });
-                this.http.delete<any>(this.endPointConfig + '/api/users', { headers: header, params: {param: user.username} }).subscribe(result => {
+                this.http.delete<any>(this.endPointConfig + '/api/users', { headers: header, params: { param: user.username } }).subscribe(result => {
                     observer.next(null);
                 }, err => {
                     console.error(err);
@@ -106,6 +106,30 @@ export class UserService {
                 observer.error(err);
             });
         });
+    }
+
+    // ==========================================
+    // RBAC Methods
+    // ==========================================
+
+    getGroups(): Observable<any[]> {
+        let header = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http.get<any[]>(this.endPointConfig + '/api/groups', { headers: header });
+    }
+
+    getModules(): Observable<any[]> {
+        let header = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http.get<any[]>(this.endPointConfig + '/api/modules', { headers: header });
+    }
+
+    getGroupPermissions(groupId: number): Observable<any> {
+        let header = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http.get<any>(this.endPointConfig + `/api/groups/${groupId}/permissions`, { headers: header });
+    }
+
+    resolveGroupPermissions(groupIds: number[]): Observable<any> {
+        let header = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http.post<any>(this.endPointConfig + '/api/groups/resolve-permissions', { groupIds }, { headers: header });
     }
 
     //#region Notify

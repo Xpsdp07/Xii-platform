@@ -20,4 +20,28 @@
         margin: 0;
         list-style: none;
     }
+     /* ✅ Style for the always-visible Simulation item */
+    .menu-item-custom {
+        width: unset;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+
+        .sidenav-btn {
+            width: 100%;
+            justify-content: flex-start;
+            text-align: left;
+
+            mat-icon {
+                margin-right: 8px;
+            }
+        }
+
+        /* Highlight when Simulation is active */
+        .sidenav-btn.active-link {
+            background-color: rgba(0, 0, 0, 0.1); // adjust for your theme
+            font-weight: bold;
+        }
+    }
 }
+    

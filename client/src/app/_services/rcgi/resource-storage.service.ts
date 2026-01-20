@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { Device } from '../../_models/device';
-import { ProjectData, ProjectDataCmdType, UploadFile } from '../../_models/project';
+import { Project, ProjectData, ProjectDataCmdType, UploadFile } from '../../_models/project';
 import { AlarmBaseType, AlarmQuery, AlarmsFilter } from '../../_models/alarm';
 import { DaqQuery } from '../../_models/hmi';
 import { CommanType } from '../command.service';
@@ -101,4 +101,12 @@ export abstract class ResourceStorageService {
         destination.tags = Object.values(destination.tags);
         return destination;
     }
+
+    // add project to db
+    public abstract setServerProjects(project: Project): Observable<any>;
+
+    // Return all saved projects as lightweight summaries.
+    public abstract getServerProjects(): Observable<ProjectData[]>;
+
+    public abstract removeServerProject(project: ProjectData): Observable<any>;
 }

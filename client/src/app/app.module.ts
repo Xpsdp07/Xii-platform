@@ -25,6 +25,13 @@ import { IframeComponent } from './iframe/iframe.component';
 import { ViewComponent } from './view/view.component';
 import { LogsViewComponent } from './logs-view/logs-view.component';
 import { SidenavComponent } from './sidenav/sidenav.component';
+// custom
+import { LandingComponent } from './landingpage/landing.component';
+import { FlexIoComponent } from './gauges/gauge-property/flex-io/flex-io.component';
+import { HidrecComponent } from './gauges/controls/Hidrec-Components/hidrec-components';
+
+
+
 import { EditorComponent, DialogLinkProperty } from './editor/editor.component';
 import { LayoutPropertyComponent } from './editor/layout-property/layout-property.component';
 import { PluginsComponent } from './editor/plugins/plugins.component';
@@ -223,6 +230,24 @@ import { EditPlaceholderComponent } from './gui-helpers/edit-placeholder/edit-pl
 import { DeviceAdapterService } from './device-adapter/device-adapter.service';
 import { VideoPropertyComponent } from './gauges/controls/html-video/video-property/video-property.component';
 
+import { AddCustomAttrDialogComponent } from './editor/add-custom-attr-dialog/add-custom-attr-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { BomModalComponent } from './editor/bom/bom-selector.component';
+
+import { MatTableModule } from '@angular/material/table';
+
+// import { MatTabsModule } from '@angular/material/tabs';
+import { ReferenceViewerComponent } from './editor/Reference/reference.component';
+import { NewProjectComponent } from './projects/new-project/new-project.component';
+import { ProjectsListComponent } from './projects/projects-list/projects-list.component';
+import { ViewListComponent } from './view/view-list/view-list.component';
+import { ModuleComponent } from './module/module.component';
+// import { MatToolbarModule } from '@angular/material/toolbar';
+
+//sdp Rbac start
+import { UserCreateComponent } from './users/user-create/user-create.component';
+//sdp Rbac end
+
 export function createTranslateLoader(http: HttpClient) {
     return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
@@ -239,6 +264,17 @@ export const myCustomTooltipDefaults: MatTooltipDefaultOptions = {
         EditorComponent,
         HeaderComponent,
         SidenavComponent,
+        // custom added,
+        NewProjectComponent,
+        ProjectsListComponent,
+        ReferenceViewerComponent,
+        ViewListComponent,
+        ModuleComponent,
+
+        BomModalComponent, 
+        HidrecComponent,
+        FlexIoComponent,
+        LandingComponent,
         IframeComponent,
         AppComponent,
         LabComponent,
@@ -394,9 +430,17 @@ export const myCustomTooltipDefaults: MatTooltipDefaultOptions = {
         LanguageTextListComponent,
         ClientScriptAccessComponent,
         TagPropertyEditWebcamComponent,
-        VideoPropertyComponent
+        VideoPropertyComponent,
+        AddCustomAttrDialogComponent,
+        //sdp Rbac start
+        UserCreateComponent,
+        //sdp Rbac end
     ],
     imports: [
+        MatDialogModule,
+        // MatTableModule,
+        // MatTabsModule,
+        // MatToolbarModule ,
         BrowserModule,
         FormsModule,
         ReactiveFormsModule,

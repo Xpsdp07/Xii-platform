@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="100"
+  height="100"
+  viewBox="0 0 100 100">
+
+  <!-- Keep canvas consistent -->
+  <rect x="0" y="0" width="100" height="100" fill="none"/>
+
+  <!-- Base -->
+  <ellipse
+    cx="50"
+    cy="72"
+    rx="32"
+    ry="10"
+    fill="#b0b0b0"
+    stroke="#333"
+    stroke-width="2"/>
+
+  <!-- Body -->
+  <rect
+    x="22"
+    y="46"
+    width="56"
+    height="26"
+    rx="6"
+    fill="#c0392b"
+    stroke="#7a0000"
+    stroke-width="2"/>
+
+  <!-- Dome (main red cap) -->
+  <path
+    id="beaconBody"
+    d="M24 46 Q50 8 76 46 Z"
+    fill="#d40000"
+    stroke="#800000"
+    stroke-width="2"
+    opacity="0.35"/>
+
+  <!-- Vertical ribs -->
+  <g stroke="#990000" stroke-width="1" opacity="0.35">
+    <line x1="38" y1="46" x2="44" y2="16"/>
+    <line x1="50" y1="46" x2="50" y2="12"/>
+    <line x1="62" y1="46" x2="56" y2="16"/>
+  </g>
+
+  <!-- Highlight -->
+  <ellipse
+    cx="44"
+    cy="28"
+    rx="6"
+    ry="16"
+    fill="rgba(255,255,255,0.25)"/>
+
+  <!-- Glow layer (controlled by tag) -->
+  <path
+    id="beaconGlow"
+    d="M24 46 Q50 8 76 46 Z"
+    fill="#ff0000"
+    opacity="0"/>
+
+  <!-- Mounting bracket -->
+  <rect x="14" y="64" width="8" height="20"
+        fill="#9e9e9e" stroke="#333" stroke-width="2"/>
+
+  <!-- Wire terminals -->
+  <circle id="terminal_plus" cx="46" cy="86" r="3"
+          fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <circle id="terminal_minus" cx="54" cy="86" r="3"
+          fill="#fff" stroke="#000" stroke-width="1.5"/>
+
+</svg>

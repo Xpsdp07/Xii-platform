@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 140 40">
+
+  <!-- Left wire connection -->
+  <line x1="10" y1="20" x2="30" y2="20"
+        stroke="#000"
+        stroke-width="2"
+        stroke-linecap="round"/>
+
+  <!-- Left fixed contact -->
+  <circle cx="30" cy="20" r="3"
+          fill="#000"/>
+
+  <!-- Open switch blade -->
+  <line x1="30" y1="20" x2="80" y2="8"
+        stroke="#000"
+        stroke-width="2"
+        stroke-linecap="round"/>
+
+  <!-- Right fixed contact -->
+  <circle cx="110" cy="20" r="3"
+          fill="#000"/>
+
+  <!-- Right wire connection -->
+  <line x1="110" y1="20" x2="130" y2="20"
+        stroke="#000"
+        stroke-width="2"
+        stroke-linecap="round"/>
+
+</svg>

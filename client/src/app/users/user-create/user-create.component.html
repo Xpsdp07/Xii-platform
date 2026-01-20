@@ -1,0 +1,70 @@
+<div class="header-panel">
+    {{ 'users.create-title' | translate : { default: 'Create User' } }}
+</div>
+
+<div class="work-panel">
+    <div class="container user-create-wrapper">
+
+        <!-- GRID: LEFT (User Details) / RIGHT (Groups) -->
+        <div class="top-grid">
+
+            <!-- USER DETAILS -->
+            <div class="form-card">
+                <h2 class="section-title">{{'users.details' | translate : { default: 'User Details' } }}</h2>
+
+                <div class="my-form-field block">
+                    <span>{{'general.username' | translate}}</span>
+                    <input [(ngModel)]="username" type="text" style="width: 100%">
+                </div>
+
+                <div class="my-form-field block mt10">
+                    <span>{{'general.fullname' | translate}}</span>
+                    <input [(ngModel)]="fullName" type="text" style="width: 100%">
+                </div>
+
+                <div class="my-form-field block mt10 password-wrapper">
+                    <span>{{'general.password' | translate}}</span>
+                    <input [(ngModel)]="password" [type]="showPassword ? 'text' : 'password'" style="width: 100%">
+                    <mat-icon class="password-toggle" (click)="showPassword = !showPassword">
+                        {{ showPassword ? 'visibility' : 'visibility_off' }}
+                    </mat-icon>
+                </div>
+            </div>
+
+            <!-- GROUPS -->
+            <div class="form-card">
+                <h2 class="section-title">{{'dlg.userproperty-groups' | translate}}</h2>
+                <!-- Added (click) to trigger auto-tick logic when user selects a group -->
+                <div (click)="applyGroupPermissions()">
+                    <sel-options [options]="groups" [selected]="selectedGroups" [multiple]="true">
+                    </sel-options>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- MODULE PERMISSIONS (MODERN CHIP UI) -->
+        <div class="permissions-card mt20">
+            <h2 class="section-title">Module Permissions</h2>
+
+            <div class="module-list">
+                <div class="module-row" *ngFor="let m of modules">
+                    <div class="module-name">{{ m.name }}</div>
+                    <div class="chip-group">
+                        <div class="chip" *ngFor="let op of m.available" [class.active]="permissions[m.id][op]"
+                            (click)="togglePermission(m.id, op)">
+                            {{ getPermissionLabel(op) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="save-button-wrapper mt20">
+            <button mat-raised-button color="primary" (click)="createUser()">
+                {{'dlg.save' | translate : { default: 'Save' } }}
+            </button>
+        </div>
+
+    </div>
+</div>

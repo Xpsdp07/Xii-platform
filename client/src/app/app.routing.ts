@@ -3,6 +3,10 @@
 import { AuthGuard } from './auth.guard';
 
 import { HomeComponent } from './home/home.component';
+// custom page 
+import { LandingComponent } from './landingpage/landing.component';
+
+
 import { EditorComponent } from './editor/editor.component';
 import { DeviceComponent } from './device/device.component';
 import { LabComponent } from './lab/lab.component';
@@ -18,9 +22,20 @@ import { ReportListComponent } from './reports/report-list/report-list.component
 import { UsersRolesComponent } from './users/users-roles/users-roles.component';
 import { MapsLocationListComponent } from './maps/maps-location-list/maps-location-list.component';
 import { LanguageTextListComponent } from './language/language-text-list/language-text-list.component';
-
-const appRoutes: Routes = [
-    { path: '', component: HomeComponent},//, canActivate: [AuthGuard] },
+import { ProjectsListComponent } from './projects/projects-list/projects-list.component';
+import { ViewListComponent } from './view/view-list/view-list.component';
+// custom
+//sdp rbac start
+import {UserCreateComponent } from './users/user-create/user-create.component';
+//sdp rbac end
+const appRoutes: Routes = [ 
+    // custom page 
+    { path: '', component: LandingComponent},
+    //sdp rbac start
+    { path: 'users/create', component: UserCreateComponent },//, canActivate: [AuthGuard]
+    //sdp rbac end
+    { path: 'projects', component: ProjectsListComponent, canActivate: [AuthGuard] },
+    { path: 'viewList', component: ViewListComponent, canActivate: [AuthGuard] },
     { path: 'home', component: HomeComponent},//, canActivate: [AuthGuard] },
     { path: 'home/:viewName', component: HomeComponent},//, canActivate: [AuthGuard] },
     { path: 'editor', component: EditorComponent, canActivate: [AuthGuard]},
@@ -39,6 +54,10 @@ const appRoutes: Routes = [
     { path: 'events', component: LogsViewComponent, canActivate: [AuthGuard] },
     { path: 'view', component: ViewComponent },
     { path: 'mapsLocations', component: MapsLocationListComponent, canActivate: [AuthGuard] },
+
+
+    
+
 
     // otherwise redirect to home
     { path: '**', redirectTo: '' }

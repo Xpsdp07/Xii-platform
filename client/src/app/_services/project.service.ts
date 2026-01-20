@@ -1,9 +1,10 @@
 
 import { Injectable, Output, EventEmitter } from '@angular/core';
 import { Observable, Subject, firstValueFrom } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { environment } from '../../environments/environment';
-import { ProjectData, ProjectDataCmdType, UploadFile } from '../_models/project';
+import { ProjectData, ProjectDataCmdType, UploadFile, Project, PROJECT_PREFIX} from '../_models/project';
 import { View, LayoutSettings, DaqQuery } from '../_models/hmi';
 import { Chart } from '../_models/chart';
 import { Graph } from '../_models/graph';
@@ -25,15 +26,18 @@ import * as FileSaver from 'file-saver';
 import { Report } from '../_models/report';
 import { MapsLocation } from '../_models/maps';
 import { ClientAccess } from '../_models/client-access';
+import util from 'xgplayer/es/utils/util';
 
 @Injectable()
 export class ProjectService {
 
     @Output() onSaveCurrent: EventEmitter<SaveMode> = new EventEmitter();
     @Output() onLoadHmi: EventEmitter<boolean> = new EventEmitter();
+    @Output() onLoadProjects: EventEmitter<boolean> = new EventEmitter();
+
     public onLoadClientAccess: Subject<void> = new Subject<void>();
 
-    private projectData = new ProjectData();            // Project data
+    private projectData = new ProjectData(Utils.getGUID(PROJECT_PREFIX));        // Project data
     public AppId = '';
 
     public serverSettings: ServerSettings;
@@ -925,7 +929,7 @@ export class ProjectService {
     }
 
     private notifySaveError(err: any) {
-        console.error('FUXA notifySaveError error', err);
+        console.error('XCADA notifySaveError error', err);
         let msg = this.translateService.instant('msg.project-save-error');
         if (err.status === 401) {
             msg = this.translateService.instant('msg.project-save-unauthorized');
@@ -942,7 +946,7 @@ export class ProjectService {
     }
 
     private notifyServerError() {
-        console.error('FUXA notifyServerError error');
+        console.error('XCADA notifyServerError error');
         let msg = null;
         this.translateService.get('msg.server-connection-error').subscribe((txt: string) => { msg = txt; });
         if (msg) {
@@ -957,7 +961,7 @@ export class ProjectService {
     private notifyError(msgCode: string) {
         const msg = this.translateService.instant(msgCode);
         if (msgCode) {
-            console.error(`FUXA Error: ${msg}`);
+            console.error(`XCADA Error: ${msg}`);
             this.toastr.error(msg, '', {
                 timeOut: 3000,
                 closeButton: true,
@@ -1039,7 +1043,7 @@ export class ProjectService {
     }
 
     setNewProject() {
-        this.projectData = new ProjectData();
+        this.projectData = new ProjectData(Utils.getGUID(PROJECT_PREFIX));
         let server = new Device(Utils.getGUID(DEVICE_PREFIX));
         server.name = FuxaServer.name;
         server.id = FuxaServer.id;
@@ -1274,6 +1278,87 @@ export class ProjectService {
         var msg = '';
         this.translateService.get(msgKey).subscribe((txt: string) => { msg = txt; });
         this.toastr.success(msg);
+    }
+
+    private notifyRemoveError(err:any, type: string){
+        console.error(`XCADA notifyRemoveError error: ${err}`);
+        let msg = this.translateService.instant(`msg.${type}-delete-fail`);
+        if (err.status === 401) {
+            msg = this.translateService.instant(`msg.${type}-delete-fail-unauthorized`);
+        } else if (err.status === 413) {
+            msg = err.error?.message || err.message || err.statusText;
+        }
+        if (msg) {
+            this.toastr.error(msg, '', {
+                timeOut: 3000,
+                closeButton: true,
+                disableTimeOut: true
+            });
+        }
+    }
+
+    private notifyCreateError(err: any,type: string){
+        console.error(`XCADA notifyCreateError error: ${err}`);
+        let msg = this.translateService.instant(`msg.${type}-saveas-fail`);
+        if (err.status === 401) {
+            msg = this.translateService.instant(`msg.${type}-saveas-fail-unauthorized`);
+        } else if (err.status === 413) {
+            msg = err.error?.message || err.message || err.statusText;
+        }
+        if (msg) {
+            this.toastr.error(msg, '', {
+                timeOut: 3000,
+                closeButton: true,
+                disableTimeOut: true
+            });
+        }
+    }
+
+    private notifyLoadProjects(){
+        this.onLoadProjects.emit(true);
+    }
+
+    saveAsToDB() {
+        const saveSuccessMsg = "msg.projects-saveas-success";
+        const projectData = this.convertToSave(this.getProject());
+        const project = new Project();
+        project.id = projectData.id;
+        project.data = projectData;
+        this.storage.setServerProjects(project).subscribe({
+            next: (res)=>{
+                this.notifySuccessMessage(saveSuccessMsg);
+                this.notifyLoadProjects();
+            }, 
+            error: (err)=>{
+                console.error(err);
+                this.notifyCreateError(err,"projects");
+            }
+        });
+    }
+
+    getProjects(): Observable<ProjectData[]> {
+        return this.storage.getServerProjects();
+    }
+
+    removeProject(project: ProjectData){
+        const rmvSuccessMsg = "msg.projects-delete-success";
+        const rmvErrorMsg = ["msg.projects-delete-fail","msg.projects-undefined"];
+        const type = "projects";
+        if(project){
+            this.storage.removeServerProject(project).subscribe({
+                next: (res)=>{
+                    this.notifySuccessMessage(rmvSuccessMsg);
+                    this.notifyLoadProjects();
+                },
+                error: (err)=>{
+                    console.error(err);
+                    this.notifyRemoveError(err,type);
+                }
+            });   
+        }
+        else{
+            this.notifyError(rmvErrorMsg[1]);
+        }
     }
 }
 

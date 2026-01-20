@@ -33,7 +33,9 @@
             ],
             "scripts": [
               "node_modules/uplot/dist/uPlot.iife.min.js",
-              "src/assets/lib/uplot/placement.min.js"
+              "src/assets/lib/uplot/placement.min.js",
+              "src/assets/lib/svgeditor/shapes/shapes.js"
+              
             ],
             "aot": false,
             "vendorChunk": true,

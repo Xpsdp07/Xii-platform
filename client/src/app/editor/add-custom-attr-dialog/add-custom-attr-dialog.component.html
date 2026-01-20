@@ -1,0 +1,140 @@
+  <!-- Dialog Title -->
+  <div class="mat-dialog-title legacy-title">
+    Attributes
+  </div>
+
+  <!-- Dialog Content -->
+  <div class="dialog-content legacy-dialog-content">
+
+    <mat-tab-group [(selectedIndex)]="activeTabIndex" class="custom-tab-group legacy-tabs">
+
+      <!-- ✅ TAB 1: ADD ATTRIBUTES -->
+      <mat-tab label="Add Attributes">
+        <div class="add-section">
+
+          <table class="attr-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Unit</th>
+                <th>Value</th>
+                <th></th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              <tr *ngFor="let attr of attributes; let i = index">
+
+                <!-- ✅ NAME -->
+                <td>
+                  <input
+                    type="text"
+                    color=" #4f5052"
+                    class="entry-input"
+                    [(ngModel)]="attr.name"
+                    placeholder=" Name"
+                  />
+                </td>
+
+                <!-- ✅ UNIT - now text input -->
+                <td>
+                  <input
+                    type="text"
+                    class="entry-input"
+                    [(ngModel)]="attr.type"
+                    placeholder="Unit"
+                  />
+                </td>
+
+                <!-- ✅ VALUE -->
+                <td>
+                  <input
+                    type="text"
+                    class="entry-input"
+                    [(ngModel)]="attr.value"
+                    placeholder="Value"
+                  />
+                </td>
+
+                <!-- Delete Button -->
+                <td class="action-col">
+                  <button class="delete-btn" (click)="removeAttribute(i)">✖</button>
+                </td>
+
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Add Button -->
+          <button class="add-circle-btn" (click)="addAttribute()">+</button>
+
+        </div>
+      </mat-tab>
+
+      <!-- ✅ TAB 2: VIEW ATTRIBUTES -->
+      <mat-tab label="View Attributes">
+        <div class="view-section">
+
+          <table class="attr-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Unit</th>
+                <th>Value</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let attr of existingAttributes; let i = index">
+
+                <ng-container *ngIf="!attr.isEditing; else editMode">
+                  <td>{{ attr.name }}</td>
+                  <td>{{ attr.type }}</td>
+                  <td>{{ attr.value }}</td>
+                  <td class="action-col">
+                    <button mat-icon-button (click)="startEdit(i)">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteAttribute(attr.name)">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <!-- Edit Mode -->
+                <ng-template #editMode>
+                  <!-- <td>{{ attr.name }}</td>
+                  <td>{{ attr.type }}</td> -->
+                  <td>
+                    <input [(ngModel)]="attr.name" class="entry-input" />
+                  </td>
+                  <td>
+                    <input [(ngModel)]="attr.type" class="entry-input" />
+                  </td>
+                  <td>
+                    <input [(ngModel)]="attr.value" class="entry-input" />
+                  </td>
+                  <td class="action-col">
+                    <button mat-button color="primary" (click)="saveEdit(i)">Save</button>
+                    <button mat-button (click)="cancelEdit(i)">Cancel</button>
+                  </td>
+                </ng-template>
+
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+
+  </div>
+
+  <!-- Dialog Footer -->
+  <div class="mat-dialog-actions legacy-actions" align="end">
+    <button mat-button (click)="onCancel()">Cancel</button>
+    <button mat-raised-button color="primary" (click)="onSave()">Save</button>
+  </div>

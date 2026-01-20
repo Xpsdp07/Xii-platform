@@ -1,4 +1,4 @@
-
+require('dotenv').config()
 const fs = require('fs');
 const path = require('path');
 const morgan = require('morgan');
@@ -17,6 +17,9 @@ const FUXA = require('./fuxa.js');
 
 const express = require('express');
 const app = express();
+
+// custom
+
 
 var server;
 var settingsFile;
@@ -316,6 +319,8 @@ app.use('/home', express.static(settings.httpStatic));
 app.use('/home/:viewName', express.static(settings.httpStatic));
 app.use('/lab', express.static(settings.httpStatic));
 app.use('/editor', express.static(settings.httpStatic));
+// custom 
+app.use('/simulationpage', express.static(settings.httpStatic));
 app.use('/device', express.static(settings.httpStatic));
 app.use('/rodevice', express.static(settings.httpStatic));
 app.use('/users', express.static(settings.httpStatic));
@@ -324,6 +329,9 @@ app.use('/' + settings.httpUploadFileStatic, express.static(settings.uploadFileD
 app.use('/_images', express.static(settings.imagesFileDir));
 app.use('/_widgets', express.static(settings.widgetsFileDir));
 app.use('/snapshots', express.static(settings.webcamSnapShotsDir))
+
+
+
 
 var accessLogStream = fs.createWriteStream(settings.logDir + '/api.log', { flags: 'a' });
 app.use(morgan('combined', {

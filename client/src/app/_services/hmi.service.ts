@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 
 import { environment } from '../../environments/environment';
 import { Tag, DeviceType } from '../_models/device';
-import { Hmi, Variable, GaugeSettings, DaqQuery, DaqResult, GaugeEventSetValueType } from '../_models/hmi';
+import { Hmi, Variable, GaugeSettings, DaqQuery, DaqResult, GaugeEventSetValueType, ViewModuleType } from '../_models/hmi';
 import { AlarmQuery, AlarmsFilter } from '../_models/alarm';
 import { ProjectService } from '../_services/project.service';
 import { EndPointApi } from '../_helpers/endpointapi';
@@ -30,6 +30,9 @@ export class HmiService {
     @Output() onScriptConsole: EventEmitter<any> = new EventEmitter();
     @Output() onGoTo: EventEmitter<ScriptSetView> = new EventEmitter();
     @Output() onOpen: EventEmitter<ScriptOpenCard> = new EventEmitter();
+
+    // custom added
+    onModuleSelection =  new BehaviorSubject<ViewModuleType>(null);
 
     onServerConnection$ = new BehaviorSubject<boolean>(false);
 

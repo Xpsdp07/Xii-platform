@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  
+  <!-- Outer bezel -->
+  <circle cx="32" cy="32" r="26" fill="#4b4b4b" stroke="#222222" stroke-width="2"/>
+
+  <!-- Middle ring -->
+  <circle cx="32" cy="32" r="20" fill="#666666"/>
+
+  <!-- Pilot lamp -->
+  <circle cx="32" cy="32" r="14" fill="#27ae60"/>
+
+  <!-- Highlight -->
+  <circle cx="27" cy="27" r="4" fill="rgba(255,255,255,0.6)"/>
+
+</svg>

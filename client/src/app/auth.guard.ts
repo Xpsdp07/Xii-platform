@@ -23,7 +23,7 @@ export class AuthGuard  {
         if (!this.projectService.isSecurityEnabled()) {
             return of(true);
         }
-        if (this.authService.isAdmin()) {
+        if (this.authService.isAdmin() ) {
             return of(true);
         }
 
@@ -44,7 +44,7 @@ export class AuthGuard  {
                     return dialogRef.afterClosed().pipe(
                         mergeMap(result => {
                             if (result) {
-                                if (this.authService.isAdmin()) {
+                                if (this.authService.isAdmin() ) {
                                     return of(true);
                                 }
                             }

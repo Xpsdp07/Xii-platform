@@ -1,0 +1,192 @@
+<div class="views-outer-container">
+    <div class="views-container leave-header-area">
+
+        <!-- HEADER -->
+        <header class="views-header">
+            <h1 class="views-title">
+                <mat-icon class="views-title__icon">view_list</mat-icon>
+                <span>{{ 'viewList.views-title' | translate }}</span>
+            </h1>
+
+            <div class="views-actions">
+
+                <!-- CREATE VIEW -->
+                <span [matTooltip]="!canCreateView() ? 'Not authorized' : ''">
+                    <button
+                        mat-raised-button
+                        color="primary"
+                        (click)="onNewView()"
+                        [disabled]="!canCreateView()"
+                    >
+                        <mat-icon style="margin-right: 4px;">add</mat-icon>
+                        <span>{{ 'viewList-views-new-view' | translate }}</span>
+                    </button>
+                </span>
+
+                <!-- MORE OPTIONS -->
+                <button
+                    mat-icon-button
+                    title="{{ 'viewList.views-more-options' | translate }}"
+                    [matMenuTriggerFor]="mainmenu"
+                    #mainmenutrigger="matMenuTrigger"
+                    class="more-options"
+                >
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+
+                <mat-menu
+                    #mainmenu="matMenu"
+                    class="leftbar-item-menu header-menu"
+                    yPosition="below"
+                    [overlapTrigger]="false"
+                >
+                    <button mat-menu-item (click)="onProjects()">
+                        {{ 'viewList-views-projects' | translate }}
+                    </button>
+
+                    <!-- MODULE SELECTION -->
+                    <span >
+                        <button
+                            mat-menu-item
+                            (click)="onSelectModule()"
+                        >
+                            {{ 'viewList.views-module-selection' | translate }}
+                        </button>
+                    </span>
+                </mat-menu>
+
+            </div>
+        </header>
+
+        <!-- LOADING -->
+        <div class="status status--loading" *ngIf="isLoading">
+            <mat-progress-spinner diameter="28" mode="indeterminate"></mat-progress-spinner>
+            <span>{{ 'viewList-views-Loading' | translate }}</span>
+        </div>
+
+        <!-- ERROR -->
+        <div class="status status--error" *ngIf="!isLoading && errorMsg">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ errorMsg }}</span>
+        </div>
+        <!-- UNAUTHORIZED -->
+        <div
+            class="status status--empty"
+            *ngIf="!isLoading && !errorMsg && !canReadView()"
+        >
+            <mat-icon>lock</mat-icon>
+            <div class="status__title">
+                Unauthorized
+            </div>
+            <div class="status__text">
+                You do not have permission to view screens in this module.
+            </div>
+        </div>
+
+        <!-- NO VIEWS IN MODULE -->
+        <div
+            class="status status--empty"
+            *ngIf="!isLoading && !errorMsg && canReadView() && viewList.length === 0"
+        >
+            <mat-icon>view_list</mat-icon>
+            <div class="status__title">
+                No Views Found
+            </div>
+            <div class="status__text">
+                There are no views available for the selected module.
+            </div>
+        </div>
+
+
+        <!-- VIEW CARDS -->
+        <section class="cards" *ngIf="!isLoading && !errorMsg && viewList.length">
+
+            <mat-card
+                class="card"
+                *ngFor="let v of viewList"
+                [matTooltip]="v.name"
+            >
+                <div class="card__header">
+                    <div class="card__avatar">
+                        <mat-icon>web_asset</mat-icon>
+                    </div>
+
+                    <div class="card__title">
+                        <div class="card__name truncate">{{ v.name }}</div>
+                    </div>
+
+                    <!-- CARD MENU -->
+                    <button
+                        mat-icon-button
+                        [matMenuTriggerFor]="viewmenu"
+                        [matMenuTriggerData]="{ view: v }"
+                        class="card__menu"
+                        aria-label="More actions"
+                    >
+                        <mat-icon>more_vert</mat-icon>
+                    </button>
+                </div>
+
+                <!-- SVG THUMB -->
+                <div class="card__thumb">
+                    <div
+                        class="card__thumb-inner"
+                        [innerHTML]="onGetSvgContent(v)"
+                    ></div>
+                </div>
+
+                <!-- CARD ACTIONS -->
+                <div class="card__actions">
+
+                    <!-- OPEN VIEW -->
+                    <span [matTooltip]="!canReadView() ? 'Not authorized' : ''">
+                        <button
+                            mat-raised-button
+                            color="primary"
+                            (click)="onOpenView(v)"
+                            [disabled]="!canReadView()"
+                        >
+                            <mat-icon style="margin-right: 5px;">launch</mat-icon>
+                            <span>{{ 'viewList-views-open' | translate }}</span>
+                        </button>
+                    </span>
+
+                    <!-- DELETE VIEW -->
+                    <span [matTooltip]="!canDeleteView() ? 'Not authorized' : ''">
+                        <button
+                            mat-raised-button
+                            (click)="onDeleteView(v)"
+                            [disabled]="!canDeleteView()"
+                        >
+                            <mat-icon style="margin-right: 4px;" color="warn">
+                                delete_outline
+                            </mat-icon>
+                            <span>{{ 'viewList-views-delete' | translate }}</span>
+                        </button>
+                    </span>
+
+                </div>
+            </mat-card>
+        </section>
+
+        <!-- VIEW CONTEXT MENU -->
+        <mat-menu
+            #viewmenu="matMenu"
+            class="leftbar-item-menu view-menu"
+            yPosition="below"
+            [overlapTrigger]="false"
+        >
+            <ng-template matMenuContent let-view="view">
+                <button
+                    mat-menu-item
+                    (click)="onRenameView(view)"
+                    [disabled]="!canUpdateView()"
+                    [matTooltip]="!canUpdateView() ? 'Not authorized' : ''"
+                >
+                    {{ 'viewList-views-rename' | translate }}
+                </button>
+            </ng-template>
+        </mat-menu>
+
+    </div>
+</div>

@@ -5,7 +5,7 @@
 		<mat-tab label="{{'gauges.property-props' | translate}}">
             <div class="mat-tab-container">
 				<div>
-					<div class="my-form-field">
+					<div class="my-form-field"> 
 						<span>{{'gauges.property-name' | translate}}</span>
 						<input [(ngModel)]="data.settings.name" style="width: 220px" type="text">
 					</div>
@@ -72,6 +72,22 @@
                 </div>
             </div>
         </mat-tab>
+
+
+		<!-- custom added  inputs  -->
+		<mat-tab label="{{'Add Inputs & Outputs' | translate}}"> 
+			<div class="mat-tab-container">
+				<div class="toolbox">
+				
+				</div>
+				<div mat-dialog-content style="overflow: visible; width:100%;">
+				<flex-io [property]="property" [data]="data" #flexio style="padding-bottom: 5px"></flex-io>
+				</div>
+			</div>
+		</mat-tab>
+
+
+
     </mat-tab-group>
     <div mat-dialog-actions class="dialog-action">
         <button mat-raised-button (click)="onNoClick()">{{'dlg.cancel' | translate}}</button>

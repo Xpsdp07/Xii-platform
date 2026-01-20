@@ -1,3 +1,5 @@
+    
+
 var svgedit = svgedit || {};
 
 (function () {
@@ -8,7 +10,7 @@ var svgedit = svgedit || {};
     }
 
     // Add here the your shapes file name 
-    var shapesToLoad = ['my-shapes.js', 'proc-shapes.js', 'ape-shapes.js'];
+    var shapesToLoad = ['my-shapes.js', 'proc-shapes.js','ape-shapes.js','Hidrec-components.js','electrical/electrical-basic.js','electrical/electrical-switchingcontrol.js'];
 
     svgedit.shapes.load = function (path, callback) {
         var progress = 0;

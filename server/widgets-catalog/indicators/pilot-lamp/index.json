@@ -1,0 +1,17 @@
+{
+  "name": "Pilot Lamp",
+  "type": "pilot-lamp",
+  "group": "Indicators",
+  "version": "1.0",
+
+  "preview": "pilot_lamp.svg",
+  "widget": "pilot_lamp.svg",
+
+  "properties": {
+    "tag": "",
+    "mode": "boolean",
+    "onColor": "green",
+    "offColor": "grey",
+    "blink": false
+  }
+}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+
+  <rect x="16" y="16" width="68" height="68" rx="6" fill="#fff"/>
+
+  <!-- wires -->
+  <line x1="22" y1="50" x2="30" y2="50" stroke="#000" stroke-width="4"/>
+  <line x1="70" y1="50" x2="78" y2="50" stroke="#000" stroke-width="4"/>
+
+  <!-- zig-zag -->
+  <polyline
+    points="30,50 36,40 42,60 48,40 54,60 60,40 66,50"
+    fill="none" stroke="#000" stroke-width="4"
+    stroke-linejoin="round"/>
+
+</svg>

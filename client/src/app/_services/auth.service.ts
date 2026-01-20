@@ -32,7 +32,13 @@ export class AuthService {
 				let header = new HttpHeaders({ 'Content-Type': 'application/json' });
 				return this.http.post(this.endPointConfig + '/api/signin', { username: username, password: password }).subscribe((result: any) => {
 					if (result) {
-						this.currentUser = <UserProfile>result.data;
+						// this.currentUser = <UserProfile>result.data;
+						this.currentUser = {
+								...result.data,
+								permissions: result.data.permissions || []   // <-- ENSURE PERMISSIONS STORED
+							} as UserProfile;
+						console.log("Permissions received on FE:", this.currentUser.permissions);
+
 						if (this.currentUser.info) {
 							this.currentUser.infoRoles = JSON.parse(this.currentUser.info)?.roles;
 						}
@@ -49,6 +55,17 @@ export class AuthService {
 			}
 		});
 
+	}
+
+	// =========================
+	// ⭐ RBAC HELPERS (CORRECT PLACE)
+	// =========================
+	hasPermission(permission: string): boolean {
+		return this.currentUser?.permissions?.includes(permission) ?? false;
+	}
+
+	getPermissions(): string[] {
+		return this.currentUser?.permissions ?? [];
 	}
 
 	signOut() {
@@ -73,6 +90,15 @@ export class AuthService {
         }
         return false;
     }
+	// custom added
+	// isEngineer(): boolean{
+	// 	if (this.currentUser && (this.currentUser.groups & UserGroups.ENGINEER)!==0){
+	// 		return true;
+	// 	}
+	// 	return false;
+
+
+	// }
 
 	setNewToken(token: string) {
 		this.currentUser.token = token;
@@ -155,6 +181,10 @@ export class AuthService {
 export class UserProfile extends User {
 	token: string;
 	infoRoles?: string[];
+	permissions: string[];   // <-- ADD THIS
+
 }
+
+
 
 export type CheckPermissionFunction = (context, forceUndefined?) => { show: boolean, enabled: boolean };

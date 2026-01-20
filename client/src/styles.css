@@ -1,6 +1,7 @@
 @import 'material-icons/iconfont/material-icons.css';
 @import "@angular/material/prebuilt-themes/indigo-pink.css";
 
+
 @font-face {
     font-family: "myicons";
     src: url("./assets/fonts/icomoon.eot?22kwk4");
@@ -12,6 +13,7 @@
     font-weight: normal;
     font-style: normal;
 }
+
 @font-face {
     font-family: "Roboto-Thin";
     src: local("Roboto Thin"), local("Roboto-Thin"),

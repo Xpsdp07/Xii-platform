@@ -85,7 +85,7 @@ module.exports = {
     //},
 
     // Used to enable security, authentication and authorization and crypt Token
-    //secureEnabled: true,
+    secureEnabled: true,
     //secretCode: 'frangoteam751',
     //tokenExpiresIn: '1h'  // '1h'=1hour, 60=60seconds, '1d'=1day
 

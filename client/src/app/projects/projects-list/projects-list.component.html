@@ -1,0 +1,120 @@
+<div class="projects-outer-container">
+    <div class="projects-container leave-header-area">
+
+        <!-- Header -->
+        <header class="projects-header">
+            <h1 class="projects-title">
+                <mat-icon class="projects-title__icon">folder</mat-icon>
+                <span>{{ 'projectList.projects-title' | translate }}</span>
+            </h1>
+            <div class="projects-actions">
+                <!-- CREATE PROJECT BUTTON with tooltip -->
+                <span [matTooltip]="!authService.hasPermission('Projects.Create') ? 'Not authorized' : ''">
+                    <button 
+                        mat-raised-button 
+                        color="primary"
+                        (click)="onNewProject()"
+                        [disabled]="!authService.hasPermission('Projects.Create')"
+                    >
+                        <mat-icon style="margin-right: 4px;">add</mat-icon>
+                        <span>{{ 'projectList.projects-new-project' | translate }}</span>
+                    </button>
+                </span>
+
+                <button 
+                    mat-icon-button 
+                    title="{{ 'projectList.projects-more-options' | translate }}"
+                    [matMenuTriggerFor]="mainmenu"
+                    #mainmenutrigger="matMenuTrigger"
+                    class="more-options"
+                >
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+
+                <mat-menu #mainmenu="matMenu" [overlapTrigger]="false">
+
+                    <!-- OPEN LAST PROJECT with tooltip -->
+                    <span matTooltip="{{ !authService.hasPermission('Projects.Read') ? 'Not authorized' : '' }}">
+                        <button 
+                            mat-menu-item
+                            (click)="onOpenLastProject()"
+                            [disabled]="!authService.hasPermission('Projects.Read')"
+                        >
+                            {{ 'projecList.projects-lastProject' | translate }}
+                        </button>
+                    </span>
+
+                </mat-menu>
+
+            </div>
+        </header>
+
+        <!-- Loading -->
+        <div class="status status--loading" *ngIf="isLoading">
+            <mat-progress-spinner diameter="28" mode="indeterminate"></mat-progress-spinner>
+            <span>{{ 'projectList.projects-Loading' | translate }}</span>
+        </div>
+
+        <!-- Error -->
+        <div class="status status--error" *ngIf="!isLoading && errorMsg">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ errorMsg }}</span>
+        </div>
+
+        <!-- Empty -->
+        <div class="status status--empty" *ngIf="!isLoading && !errorMsg && projects.length === 0">
+            <mat-icon class="projects-title__icon">folder</mat-icon>
+            <div>{{ 'projectList.projects-empty' | translate }}</div>
+
+            <span [matTooltip]="!authService.hasPermission('Projects.Create') ? 'Not authorized' : ''">
+                <button 
+                    mat-raised-button 
+                    color="primary"
+                    (click)="onNewProject()"
+                    [disabled]="!authService.hasPermission('Projects.Create')"
+                >
+                    <span>{{ 'projectList.projects-create-first-project' | translate }}</span>
+                </button>
+            </span>
+        </div>
+
+        <!-- Projects Cards -->
+        <section class="cards" *ngIf="!isLoading && !errorMsg && projects.length">
+            <mat-card class="card" *ngFor="let p of projects" [matTooltip]="p.name">
+                <div class="card__header">
+                    <div class="card__avatar">
+                        <mat-icon>folder_open</mat-icon>
+                    </div>
+                    <div class="card__title">
+                        <div class="card__name truncate">{{ p.name }}</div>
+                    </div>
+                </div>
+                <div class="card__actions">
+                    <!-- OPEN PROJECT with tooltip -->
+                    <span [matTooltip]="!authService.hasPermission('Projects.Read') ? 'Not authorized' : ''">
+                        <button 
+                            mat-raised-button 
+                            color="primary"
+                            (click)="onOpenProject(p)"
+                            [disabled]="!authService.hasPermission('Projects.Read')"
+                        >
+                            <mat-icon style="margin-right: 5px;">launch</mat-icon>
+                            <span>{{ 'projectList.projects-open' | translate }}</span>
+                        </button>
+                    </span>
+                    <!-- DELETE PROJECT with tooltip -->
+                    <span [matTooltip]="!authService.hasPermission('Projects.Delete') ? 'Not authorized' : ''">
+                        <button 
+                            mat-raised-button 
+                            (click)="onDeleteProject(p)"
+                            [disabled]="!authService.hasPermission('Projects.Delete')"
+                        >
+                            <mat-icon style="margin-right: 4px;" color="warn">delete_outline</mat-icon>
+                            <span>{{ 'projectLsit.projects-delete' | translate }}</span>
+                        </button>
+                    </span>
+                </div>
+            </mat-card>
+        </section>
+    </div>
+</div>

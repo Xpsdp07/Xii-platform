@@ -1,0 +1,36 @@
+
+<div class="right-viewer">
+
+  <mat-form-field appearance="fill" class="view-selector">
+    <mat-label>Select Design View</mat-label>
+    <mat-select [(value)]="selectedView" (selectionChange)="onSelectView($event.value)">
+      <mat-option *ngFor="let v of viewsList" [value]="v">
+        {{ v.name }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div class="import-row">
+    <input id="refFileInput" type="file" accept=".json" hidden (change)="onFileUpload($event)">
+    <button mat-stroked-button (click)="triggerUpload()">Import JSON</button>
+    <button mat-stroked-button (click)="resetView()">Reset</button>
+  </div>
+
+  <div class="viewer-wrapper"
+       (wheel)="onWheel($event)"
+       (mousedown)="startPan($event)"
+       (mousemove)="pan($event)"
+       (mouseup)="endPan()"
+       (mouseleave)="endPan()">
+
+    <div class="canvas-viewport">
+      <div class="canvas-stage"
+           [style.transform]="'translate(' + panX + 'px,' + panY + 'px) scale(' + zoom + ')'">
+
+        <div class="canvas" [innerHTML]="safeFullSvg"></div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

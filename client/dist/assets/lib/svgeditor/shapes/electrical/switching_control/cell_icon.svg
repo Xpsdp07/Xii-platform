@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+
+  <!-- inner white bg -->
+  <rect x="16" y="16" width="68" height="68" rx="6" fill="#fff"/>
+
+  <!-- wires -->
+  <line x1="24" y1="50" x2="38" y2="50" stroke="#000" stroke-width="4"/>
+  <line x1="62" y1="50" x2="76" y2="50" stroke="#000" stroke-width="4"/>
+
+  <!-- plates -->
+  <line x1="42" y1="36" x2="42" y2="64" stroke="#000" stroke-width="4"/>
+  <line x1="58" y1="30" x2="58" y2="70" stroke="#000" stroke-width="4"/>
+
+</svg>

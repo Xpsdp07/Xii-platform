@@ -1,9 +1,9 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
-import { ProjectData, ProjectDataCmdType, UploadFile } from '../../_models/project';
+import { Project, ProjectData, ProjectDataCmdType, UploadFile } from '../../_models/project';
 import { ResourceStorageService } from './resource-storage.service';
 import { AlarmBaseType, AlarmQuery, AlarmsFilter } from '../../_models/alarm';
 import { DaqQuery } from '../../_models/hmi';
@@ -173,5 +173,17 @@ export class ResDemoService implements ResourceStorageService {
         return new Observable(observer => {
             observer.error('Not supported!');
         });
+    }
+
+    setServerProjects(project: Project): Observable<any> {
+        return;
+    }
+
+    getServerProjects(): Observable<ProjectData[]> {
+        return of();
+    }
+
+    removeServerProject(project: ProjectData): Observable<any>{
+        return;
     }
 }

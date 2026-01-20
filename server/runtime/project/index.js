@@ -11,6 +11,8 @@ const async = require('async');
 var events = require('../events');
 var utils = require('../utils');
 const prjstorage = require('./prjstorage');
+const { reject } = require('bluebird');
+const { table } = require('console');
 const DeviceType = require('../devices/device').DeviceType;
 
 const version = '1.02';
@@ -703,7 +705,7 @@ function setProject(prjcontent) {
                             }
                         }
                     } else {
-                        // charts, graphs, version
+                        // charts, graphs, version, name, id
                         scs.push({ table: prjstorage.TableType.GENERAL, name: key, value: prjcontent[key] });
                     }
                 });
@@ -914,6 +916,64 @@ function setDeviceProperty(query) {
 }
 
 /**
+ * set projects to the db 
+*/
+function setProjects(projectData){
+    return new Promise(function (resolve,reject){
+        if(projectData.id && projectData.data){
+            prjstorage.setSection({table:prjstorage.TableType.PROJECTS, name: projectData.id, value: projectData.data})
+            .then(()=>{
+                logger.error(`project.prjstorage.set-projects success!, table:'${prjstorage.TableType.PROJECTS}`);
+                resolve();
+            })
+            .catch((err)=>{
+                logger.error(`project.prjstorage.set-projects failed! table:'${prjstorage.TableType.PROJECTS} ${err}'`);
+                reject(err);
+            })
+        }
+        else{
+            logger.error(`projects.prjstorage.set-projects failed! table:'${prjstorage.TableType.PROJECTS} ${"Project Data or attribute undefined."}'`)
+            reject("Project Data or attribute undefined.");
+        }
+    })
+}
+
+/**
+ * get projects from the db
+ */
+function getProjects(){
+    return new Promise(function (resolve,reject){
+        prjstorage.getSection(prjstorage.TableType.PROJECTS)
+        .then((drows)=>{
+            var projects = [];
+            drows.forEach(row=>{
+                projects.push(JSON.parse(row.value));
+            })
+            resolve(projects);
+        })
+        .catch((err)=>{
+            logger.error(`project.prjstorage.get-projects failed! '${prjstorage.TableType.PROJECTS} ${err}'`);
+            reject(err);
+        })
+    })
+
+}
+
+/**
+ * delete project in db
+ */
+function deleteProject(row){   
+    return new Promise(function (resolve, reject){
+        prjstorage.deleteSection({table:prjstorage.TableType.PROJECTS, name: row.id})
+        .then(res=>{
+            resolve();
+        })
+        .catch(err=>{
+            reject(err);
+        })
+    })
+}
+/**
  * Return Project demo from file
  */
 function getProjectDemo() {
@@ -1074,5 +1134,8 @@ module.exports = {
     getProject: getProject,
     setProject: setProject,
     getProjectDemo: getProjectDemo,
+    setProjects:setProjects,
+    getProjects:getProjects,
+    deleteProject:deleteProject,
     ProjectDataCmdType, ProjectDataCmdType,
 };

@@ -19,6 +19,9 @@ import { ProcEngComponent } from './shapes/proc-eng/proc-eng.component';
 import { ApeShapesComponent } from './shapes/ape-shapes/ape-shapes.component';
 import { PipeComponent } from './controls/pipe/pipe.component';
 import { SliderComponent } from './controls/slider/slider.component';
+// custom added 
+
+import { HidrecComponent  } from './controls/Hidrec-Components/hidrec-components';
 
 import { WindowRef } from '../_helpers/windowref';
 import { Utils } from '../_helpers/utils';
@@ -37,6 +40,10 @@ import { FuxaViewComponent } from '../fuxa-view/fuxa-view.component';
 import { AuthService } from '../_services/auth.service';
 import { DevicesUtils, Tag } from '../_models/device';
 import { HtmlVideoComponent } from './controls/html-video/html-video.component';
+
+
+// custom attributes 
+import { GaugesUtils } from './gauges-utils';
 
 @Injectable()
 export class GaugesManager {
@@ -65,16 +72,16 @@ export class GaugesManager {
     // list of gauges tags to check who as events like mouse click
     static GaugeWithEvents = [HtmlButtonComponent.TypeTag, GaugeSemaphoreComponent.TypeTag, ShapesComponent.TypeTag, ProcEngComponent.TypeTag,
     ApeShapesComponent.TypeTag, HtmlImageComponent.TypeTag, HtmlInputComponent.TypeTag, PanelComponent.TypeTag, HtmlSelectComponent.TypeTag,
-    HtmlSwitchComponent.TypeTag];
+    HtmlSwitchComponent.TypeTag,HidrecComponent.TypeTag ];
     // list of gauges tags to check who as events like mouse click
     static GaugeWithActions = [ApeShapesComponent, PipeComponent, ProcEngComponent, ShapesComponent, HtmlButtonComponent, HtmlSelectComponent,
-        ValueComponent, HtmlInputComponent, GaugeSemaphoreComponent, HtmlImageComponent, PanelComponent, HtmlVideoComponent];
+        ValueComponent, HtmlInputComponent, GaugeSemaphoreComponent, HtmlImageComponent, PanelComponent, HtmlVideoComponent,HidrecComponent];
     // list of gauges components
     static Gauges = [ValueComponent, HtmlInputComponent, HtmlButtonComponent, HtmlBagComponent,
         HtmlSelectComponent, HtmlChartComponent, GaugeProgressComponent, GaugeSemaphoreComponent, ShapesComponent, ProcEngComponent, ApeShapesComponent,
         PipeComponent, SliderComponent, HtmlSwitchComponent, HtmlGraphComponent, HtmlIframeComponent, HtmlTableComponent,
-        HtmlImageComponent, PanelComponent, HtmlVideoComponent];
-
+        HtmlImageComponent, PanelComponent ,HidrecComponent, HtmlVideoComponent];
+ 
     constructor(private hmiService: HmiService,
         private authService: AuthService,
         private winRef: WindowRef) {
@@ -106,20 +113,82 @@ export class GaugesManager {
             GaugesManager.gaugesTags.push(g.TypeTag);
         });
     }
+    // --- Add to GaugesManager (top of class) ---  customized
 
+    static get customAttributesRegistry() {
+        return GaugesUtils.customAttributesRegistry;
+    }
+
+    // ✅ Get custom attributes for a specific widget instance
+    static getCustomAttributesForWidget(widgetId: string) {
+        return GaugesUtils.getCustomAttributesForWidget(widgetId);
+    }
+
+    // ✅ Set (replace) custom attributes for a widget instance
+    static setCustomAttributesForWidget(
+        widgetId: string,
+        typeOrFull: string,
+        attributes: any[] | { [k: string]: any },
+        availableTags: string[]
+    ) {
+        GaugesUtils.setCustomAttributesForWidget(widgetId, typeOrFull, attributes, availableTags);
+    }
+
+    // ✅ Merge (extend) custom attributes for a widget instance
+    static mergeCustomAttributesForWidget(
+        widgetId: string,
+        typeOrFull: string,
+        attributes: any[] | { [k: string]: any },
+        availableTags: string[]
+    ) {
+        GaugesUtils.mergeCustomAttributesForWidget(widgetId, typeOrFull, attributes, availableTags);
+    }
+    
     createSettings(id: string, type: string): GaugeSettings {
         let gs: GaugeSettings = null;
-        if (type) {
-            for (let i = 0; i < GaugesManager.Gauges.length; i++) {
-                if (type.startsWith(GaugesManager.Gauges[i].TypeTag)) {
-                    gs = new GaugeSettings(id, type);
-                    gs.label = GaugesManager.Gauges[i].LabelTag;
-                    return gs;
-                }
+
+        if (!type) return gs;
+
+        for (let i = 0; i < GaugesManager.Gauges.length; i++) {
+            const gaugeDef = GaugesManager.Gauges[i];
+
+            if (type.startsWith(gaugeDef.TypeTag)) {
+                gs = new GaugeSettings(id, type);
+                gs.label = gaugeDef.LabelTag;
+
+                // ===== Fetch widget-level custom attributes (specific instance) =====
+                const widgetAttrs = GaugesManager.getCustomAttributesForWidget(id) || {};
+
+                // ===== Optionally fetch type-level defaults (if any exist) =====
+                const typeDefaults = GaugesUtils.getCustomAttributesForWidget(gaugeDef.TypeTag) || {};
+
+                // ===== Combine type defaults + widget custom attributes =====
+                gs.customAttributes = {
+                    ...typeDefaults,
+                    ...widgetAttrs,
+                };
+
+                return gs;
             }
         }
+
         return gs;
     }
+
+// Old Function
+    // createSettings(id: string, type: string): GaugeSettings {
+    //     let gs: GaugeSettings = null;
+    //     if (type) {
+    //         for (let i = 0; i < GaugesManager.Gauges.length; i++) {
+    //             if (type.startsWith(GaugesManager.Gauges[i].TypeTag)) {
+    //                 gs = new GaugeSettings(id, type);
+    //                 gs.label = GaugesManager.Gauges[i].LabelTag;
+    //                 return gs;
+    //             }
+    //         }
+    //     }
+    //     return gs;
+    // }
 
     createGaugeStatus(ga: GaugeSettings): GaugeStatus {
         let result = new GaugeStatus();

@@ -18,7 +18,7 @@
     <div class="container">
         <div class="main-device" *ngIf="server?.property" [style.left.px]="getMainLeftPosition()" [style.top.px]="getMainTopPosition()" [style.width.px]="mainWidth"
             [style.height.px]="mainHeight" [style.borderWidth.px]="mainBorder">
-            <span class="device-header" style="padding-top: 10px;">{{ server.name }}</span>
+            <span class="device-header" style="padding-top: 10px;">XSCADA Server</span>
             <span class="device-pro">{{ server.property.address }}</span>
             <!-- <mat-icon (click)="onListDevice(server)" class="device-icon device-list">list_alt</mat-icon> -->
             <!-- <mat-icon (click)="onEditDevice(server)" class="device-icon device-edit" >edit</mat-icon> -->

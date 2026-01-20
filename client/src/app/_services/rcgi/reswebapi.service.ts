@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, Observable, of, switchMap } from 'rxjs';
 
 import { EndPointApi } from '../../_helpers/endpointapi';
-import { ProjectData, ProjectDataCmdType, UploadFile } from '../../_models/project';
+import { Project, ProjectData, ProjectDataCmdType, UploadFile } from '../../_models/project';
 import { ResourceStorageService } from './resource-storage.service';
 import { AlarmQuery, AlarmBaseType, AlarmsFilter } from '../../_models/alarm';
 import { DaqQuery } from '../../_models/hmi';
@@ -13,6 +13,7 @@ import { Report, ReportFile, ReportsQuery } from '../../_models/report';
 import { ToastrService } from 'ngx-toastr';
 import { TranslateService } from '@ngx-translate/core';
 import { Role } from '../../_models/user';
+import { Pass } from 'codemirror';
 
 @Injectable()
 export class ResWebApiService implements ResourceStorageService {
@@ -219,5 +220,21 @@ export class ResWebApiService implements ResourceStorageService {
             closeButton: true,
             disableTimeOut: true
         });
+    }
+
+    setServerProjects(project: Project): Observable<any> {
+        let header = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http.post<any>(this.endPointConfig + '/api/projects', project, { headers: header });
+    }
+
+    getServerProjects(): Observable<ProjectData[]> {
+        let header = new HttpHeaders({ 'Content-Type': 'application/json' });
+        return this.http.get<ProjectData[]>(this.endPointConfig + '/api/projects', { headers: header });
+    }
+
+    removeServerProject(project: ProjectData): Observable<any>{
+        let header = new HttpHeaders({ 'Content-Type': 'application/json' });
+        let params = { id: project.id };
+        return this.http.delete<any>(this.endPointConfig + '/api/projects', { headers: header, params: params });
     }
 }

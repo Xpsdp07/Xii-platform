@@ -1,0 +1,105 @@
+<div class="dlg-container">
+    <h1 mat-dialog-title style="display:inline-block;cursor:move;" mat-dialog-draggable>
+        {{ 'dlg.module-title' | translate }}
+    </h1>
+
+    <div mat-dialog-content>
+
+        <div class="separator">
+            <div class="separator-line" style="position:absolute;left: 0px"></div>
+            <div class="separator-text">
+                {{ 'dlg.module-core' | translate }}
+            </div>
+            <div class="separator-line" style="position:absolute;right: 0px"></div>
+        </div>
+
+        <div class="btn-cards">
+
+            <!-- DESIGN -->
+            <div class="btn-card">
+                <span [matTooltip]="!canAccessDesign() ? 'Not authorized' : ''">
+                    <button
+                        mat-button
+                        class="card-btn"
+                        (click)="onDesign()"
+                        [disabled]="!canAccessDesign()"
+                    >
+                        <div class="card-btn-content">
+                            <mat-icon>view_module</mat-icon>
+                            <span>{{ 'dlg.module-design' | translate }}</span>
+                        </div>
+                    </button>
+                </span>
+            </div>
+
+            <!-- CONTROLS -->
+            <div class="btn-card">
+                <span [matTooltip]="!canAccessControls() ? 'Not authorized' : ''">
+                    <button
+                        mat-button
+                        class="card-btn"
+                        (click)="onControls()"
+                        [disabled]="!canAccessControls()"
+                    >
+                        <div class="card-btn-content">
+                            <mat-icon>tune</mat-icon>
+                            <span>{{ 'dlg.module-controls' | translate }}</span>
+                        </div>
+                    </button>
+                </span>
+            </div>
+
+            <!-- PERFORMANCE -->
+            <div class="btn-card">
+                <span [matTooltip]="!canAccessPerformance() ? 'Not authorized' : ''">
+                    <button
+                        mat-button
+                        class="card-btn"
+                        (click)="onPerformance()"
+                        [disabled]="!canAccessPerformance()"
+                    >
+                        <div class="card-btn-content">
+                            <mat-icon>speed</mat-icon>
+                            <span>{{ 'dlg.module-performance' | translate }}</span>
+                        </div>
+                    </button>
+                </span>
+            </div>
+
+            <!-- LIFING -->
+            <div class="btn-card">
+                <span [matTooltip]="!canAccessLifing() ? 'Not authorized' : ''">
+                    <button
+                        mat-button
+                        class="card-btn"
+                        (click)="onLifing()"
+                        [disabled]="!canAccessLifing()"
+                    >
+                        <div class="card-btn-content">
+                            <mat-icon>favorite_border</mat-icon>
+                            <span>{{ 'dlg.module-lifing' | translate }}</span>
+                        </div>
+                    </button>
+                </span>
+            </div>
+
+            <!-- PROGNOSTICS -->
+            <div class="btn-card">
+                <span [matTooltip]="!canAccessPrognostics() ? 'Not authorized' : ''">
+                    <button
+                        mat-button
+                        class="card-btn"
+                        (click)="onPrognostics()"
+                        [disabled]="!canAccessPrognostics()"
+                    >
+                        <div class="card-btn-content">
+                            <mat-icon>insights</mat-icon>
+                            <span>{{ 'dlg.module-prognostics' | translate }}</span>
+                        </div>
+                    </button>
+                </span>
+            </div>
+
+        </div>
+    </div>
+</div>

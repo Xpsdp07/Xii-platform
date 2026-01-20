@@ -1,0 +1,2 @@
+/* minimal, keep it tidy */
+:host { display: block; min-width: 360px; }

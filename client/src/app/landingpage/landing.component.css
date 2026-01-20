@@ -1,0 +1,81 @@
+/* Full screen flex layout */
+.landing-page {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  font-family: Arial, sans-serif;
+  background-color: #000;
+  color: #fff;
+}
+
+/* Left panel with Lottie */
+.left-panel {
+  width: 70%;
+  background-color: #1f2937;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+#lottie-animation {
+  width: 60%;
+  height: 60%;
+}
+
+/* Pulsing initialization text */
+.init-text {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  text-align: center;
+  font-size: 1.2rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Right panel with login */
+.right-panel {
+  width: 30%;
+  background-color: #111827; /* gray-900 */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Header */
+.header {
+  background-color: #111827;
+  text-align: center;
+  padding: 1rem;
+  border-bottom: 1px solid #374151; /* gray-700 */
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: bold;
+}
+
+/* Login section */
+.login-section {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+/* Footer */
+.footer {
+  background-color: #111827;
+  text-align: center;
+  padding: 0.75rem;
+  border-top: 1px solid #374151;
+  color: #9ca3af; /* gray-400 */
+  font-size: 0.875rem;
+}

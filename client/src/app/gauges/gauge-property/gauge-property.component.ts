@@ -4,6 +4,8 @@ import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialog as MatDialog
 import { FlexHeadComponent } from './flex-head/flex-head.component';
 import { FlexEventComponent } from './flex-event/flex-event.component';
 import { FlexActionComponent } from './flex-action/flex-action.component';
+// custom
+import { FlexIoComponent } from './flex-io/flex-io.component';
 import { GaugeProperty, GaugeSettings, View, WidgetProperty } from '../../_models/hmi';
 import { Script } from '../../_models/script';
 import { PropertyType } from './flex-input/flex-input.component';
@@ -23,6 +25,9 @@ export class GaugePropertyComponent implements AfterViewInit {
     @ViewChild('flexhead', {static: false}) flexHead: FlexHeadComponent;
     @ViewChild('flexevent', {static: false}) flexEvent: FlexEventComponent;
     @ViewChild('flexaction', {static: false}) flexAction: FlexActionComponent;
+    // custom
+    @ViewChild('flexio', { static: false }) flexIo: FlexIoComponent;  // later replace `any` with your FlexIoComponent
+
 
     slideView = true;
     slideActionView = true;
@@ -35,6 +40,7 @@ export class GaugePropertyComponent implements AfterViewInit {
     defaultValue: any;
     inputs: GaugeSettings[];
     scripts: Script[];
+    
 
     constructor(public dialog: MatDialog,
                 public dialogRef: MatDialogRef<GaugePropertyComponent>,
@@ -90,8 +96,12 @@ export class GaugePropertyComponent implements AfterViewInit {
         if (this.flexEvent) {
             this.data.settings.property.events = this.flexEvent.getEvents();
         }
+        // custom
         if (this.flexAction) {
             this.data.settings.property.actions = this.flexAction.getActions();
+        }
+        if (this.flexIo) {
+            this.data.settings.property.io = this.flexIo.getIo();
         }
         if (this.property.readonly) {
             this.property.readonly = true;
@@ -110,6 +120,10 @@ export class GaugePropertyComponent implements AfterViewInit {
 
     onAddAction() {
         this.flexAction.onAddAction();
+    }
+    // custom
+    onAddIo() {
+        this.flexIo.onAddIo();
     }
 
     onRangeViewToggle() {

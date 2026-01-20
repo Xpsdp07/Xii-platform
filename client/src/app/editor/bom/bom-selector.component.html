@@ -1,0 +1,116 @@
+<h2 mat-dialog-title>Bill of Materials (BOM)</h2>
+
+<mat-dialog-content>
+  <form>
+    <div class="bom-table-container">
+      <table mat-table [dataSource]="bomData" class="mat-elevation-z8">
+
+        <!-- Sl No -->
+        <ng-container matColumnDef="slno">
+          <th mat-header-cell *matHeaderCellDef> Sl </th>
+          <td mat-cell *matCellDef="let element; let i = index"> {{ i + 1 }} </td>
+        </ng-container>
+
+        <!-- Item Name -->
+        <ng-container matColumnDef="item">
+          <th mat-header-cell *matHeaderCellDef> Name </th>
+          <td mat-cell *matCellDef="let element"> {{ element.item }} </td>
+        </ng-container>
+ 
+        <!-- Custom Attributes -->
+        <!-- Custom Attributes -->
+        <ng-container matColumnDef="attributes">
+          <th mat-header-cell *matHeaderCellDef> Attributes </th>
+          <td mat-cell *matCellDef="let element">
+            <div *ngIf="element.customAttributes && (element.customAttributes | keyvalue).length; else noAttrs">
+
+              <div *ngFor="let attr of element.customAttributes | keyvalue">
+
+                <!-- CASE 1: New structure { type: '', value: '' } -->
+                <ng-container *ngIf="attr.value?.type !== undefined && attr.value?.value !== undefined; else oldFormat">
+                  <strong>{{ attr.key }}</strong> :
+                  {{ attr.value.value }}  <!-- value -->
+                  <span *ngIf="attr.value.type"> ({{ attr.value.type }})</span> <!-- unit -->
+                </ng-container>
+
+                <!-- CASE 2: Old structure "length": "23" -->
+                <ng-template #oldFormat>
+                  <strong>{{ attr.key }}</strong> : {{ attr.value }}
+                </ng-template>
+
+              </div>
+            </div>
+
+            <ng-template #noAttrs>
+              <em>No Attributes</em>
+            </ng-template>
+          </td>
+        </ng-container>
+
+        <!-- Quantity -->
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef> Qty </th>
+          <td mat-cell *matCellDef="let element">
+            <input matInput type="number" min="1" [(ngModel)]="element.quantity"
+                   name="quantity{{element.id}}" placeholder="Qty" style="width: 60px;" />
+          </td>
+        </ng-container>
+
+        <!-- Remarks -->
+        <ng-container matColumnDef="remarks">
+          <th mat-header-cell *matHeaderCellDef> Remarks </th>
+          <td mat-cell *matCellDef="let element">
+            <input matInput type="text" [(ngModel)]="element.remarks"
+                   name="remarks{{element.id}}" placeholder=" Enter Remarks" style="width: 150px;" />
+          </td>
+        </ng-container>
+
+        
+        <!-- ID -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef> ID </th>
+          <td mat-cell *matCellDef="let element"> {{ element.id }} </td>
+        </ng-container>
+
+        <!-- Delete -->
+        <!-- <ng-container matColumnDef="delete">
+          <th mat-header-cell *matHeaderCellDef> Action </th>
+          <td mat-cell *matCellDef="let element; let i = index">
+            <button mat-icon-button color="warn" (click)="confirmDelete(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container> -->
+
+
+        <!-- Header and Row Definitions -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<!-- ✅ Better alignment for buttons -->
+<mat-dialog-actions class="bom-actions" align="end">
+  <div class="left-actions">
+    <button
+      mat-raised-button
+      color="primary"
+      [matMenuTriggerFor]="downloadMenu"
+      class="download-btn"
+    >
+      ⬇️ Download
+    </button>
+    <mat-menu #downloadMenu="matMenu">
+      <button mat-menu-item (click)="download('json')">JSON</button>
+      <button mat-menu-item (click)="download('xlsx')">Excel (.xlsx)</button>
+      <button mat-menu-item (click)="download('csv')">CSV (.csv)</button>
+    </mat-menu>
+  </div>
+
+  <div class="right-actions">
+    <button mat-raised-button color="success" (click)="save()">Ok</button>
+    <button mat-raised-button mat-dialog-close color="warn">Cancel</button>
+  </div>
+</mat-dialog-actions>

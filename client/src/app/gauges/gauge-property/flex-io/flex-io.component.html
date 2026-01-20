@@ -1,0 +1,20 @@
+<div *ngFor="let io of property.io; let i=index" class="io-field">
+  <mat-form-field>
+    <input matInput [(ngModel)]="io.name" placeholder="Paramater Name">
+  </mat-form-field>
+  <mat-form-field>
+    <input matInput [(ngModel)]="io.unit" placeholder="Unit">
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-select [(ngModel)]="io.type" placeholder="Type">
+      <mat-option value="input">Input</mat-option>
+      <mat-option value="output">Output</mat-option>
+    </mat-select>
+  </mat-form-field>
+  
+
+  
+</div>
+<!-- Button to add new IO row -->
+<button mat-raised-button color="primary" (click)="onAddIo()">+ Add IO</button>

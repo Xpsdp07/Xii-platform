@@ -1,9 +1,10 @@
 'use strict';
 
+const { json } = require('body-parser');
 const jwt = require('jsonwebtoken');
 
 var secureEnabled = false;
-var secretCode = 'frangoteam751';
+var secretCode = 'MY_SUPER_SECRET_123';
 var tokenExpiresIn = 60 * 60;   // 60 minutes
 const adminGroups = [-1, 255];
 
@@ -22,9 +23,12 @@ function init(_secureEnabled, _secretCode, _tokenExpires) {
  * Verify token
  * @param {*} token
  */
-function verify (token) {
-    return new Promise ((resolve, reject) => {
+
+function verify(token) {
+    return new Promise((resolve, reject) => {
+
         jwt.verify(token, secretCode, (err, decoded) => {
+
             if (err) {
                 console.error(`verify token error: ${err}`);
                 reject(false);
@@ -41,23 +45,25 @@ function verify (token) {
  * @param {*} res
  * @param {*} next
  */
-function verifyToken (req, res, next) {
+function verifyToken(req, res, next) {
     let token = req.headers['x-access-token'];
 
     if (!token) {
         token = getGuestToken();
     }
-
     if (token) {
         jwt.verify(token, secretCode, (err, decoded) => {
             if (err) {
+                console.log("assigning guest , error :", err);
                 req.userId = "guest";
                 req.userGroups = ["guest"];
             } else {
+                console.log("else part of verify token");
                 req.userId = decoded.id;
                 req.userGroups = decoded.groups;
                 if (req.headers['x-auth-user']) {
                     let user = JSON.parse(req.headers['x-auth-user']);
+
                     if (user && user.groups != req.userGroups) {
                         res.status(403).json({ error: "unauthorized_error", message: "User Profile Corrupted!" });
                     }
@@ -83,7 +89,7 @@ function getNewToken(headers) {
             id: authUser.user,
             groups: authUser.groups
         },
-        secretCode, {
+            secretCode, {
             expiresIn: tokenExpiresIn
         });
     }
@@ -92,16 +98,18 @@ function getNewToken(headers) {
 
 function getGuestToken() {
     const token = jwt.sign({
-            id: "guest",
-            groups: ["guest"]
-        },
+        id: "guest",
+        groups: ["guest"]
+    },
         secretCode, {
-            expiresIn: tokenExpiresIn
-        });
+        expiresIn: tokenExpiresIn
+    });
     return token;
 }
 
 function haveAdminPermission(permission) {
+    console.log("checking admin permission ,, permission:", permission);
+
     if (permission === null || permission === undefined) {
         return false;
     }

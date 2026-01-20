@@ -1,0 +1,123 @@
+<!-- Page container -->
+<div class="projects-page">
+    <div class="projects-container leave-header-area">
+        <!-- Header -->
+        <header class="projects-header">
+            <h1 class="projects-title">
+                <mat-icon class="projects-title__icon">folder</mat-icon>
+                <span>Projects</span>
+            </h1>
+
+            <div class="projects-actions">
+                <button
+                    mat-raised-button
+                    color="accent"
+                    (click)="onOpenLastProject()"
+                >
+                    <mat-icon>history</mat-icon>
+                    <span>Last Project</span>
+                </button>
+                <button
+                    mat-raised-button
+                    color="primary"
+                    (click)="onNewProject()"
+                >
+                    <mat-icon>add</mat-icon>
+                    <span>New Project</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Loading -->
+        <div class="status status--loading" *ngIf="isLoading">
+            <mat-progress-spinner
+                diameter="28"
+                mode="indeterminate"
+            ></mat-progress-spinner>
+            <span>Loading projects…</span>
+        </div>
+
+        <!-- Error -->
+        <div class="status status--error" *ngIf="!isLoading && errorMsg">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ errorMsg }}</span>
+        </div>
+
+        <!-- if there are no projects, Empty -->
+        <div
+            class="status status--empty"
+            *ngIf="!isLoading && !errorMsg && projects.length === 0"
+        >
+            <mat-icon class="projects-title__icon">folder</mat-icon>
+            <div>No projects yet</div>
+            <button mat-raised-button color="primary" (click)="onNewProject()">
+                <span>Create your first project</span>
+            </button>
+        </div>
+
+        <!-- Cards -->
+        <section
+            class="cards"
+            *ngIf="!isLoading && !errorMsg && projects.length"
+        >
+            <mat-card
+                class="card"
+                *ngFor="let p of projects"
+                [matTooltip]="p.name"
+            >
+                <div class="card__header">
+                    <div class="card__avatar">
+                        <mat-icon>dashboard</mat-icon>
+                    </div>
+                    <div class="card__title">
+                        <div class="card__name truncate">{{ p.name }}</div>
+                        <!-- <div class="card__meta">Updated {{ p.updatedAt | date:'medium' }}</div> -->
+                    </div>
+
+                    <button
+                        mat-icon-button
+                        [matMenuTriggerFor]="menu"
+                        [matMenuTriggerData]="{ project: p }"
+                        class="card__menu"
+                        aria-label="More actions"
+                    >
+                        <mat-icon>more_vert</mat-icon>
+                    </button>
+                </div>
+
+                <div class="card__actions">
+                    <button
+                        mat-button
+                        color="primary"
+                        (click)="onOpenProject(p)"
+                    >
+                        <mat-icon>launch</mat-icon>
+                        Open
+                    </button>
+                    <button
+                        mat-button
+                        color="warn"
+                        (click)="onDeleteProject(p)"
+                    >
+                        <mat-icon>delete_outline</mat-icon>
+                        Delete
+                    </button>
+                </div>
+            </mat-card>
+        </section>
+
+        <!-- Shared menu (uses trigger data) -->
+        <mat-menu #menu="matMenu">
+            <ng-template matMenuContent let-project="project">
+                <button mat-menu-item (click)="onOpenProject(project)">
+                    <mat-icon color="primary">launch</mat-icon>
+                    <span>Open</span>
+                </button>
+                <button mat-menu-item (click)="onDeleteProject(project)">
+                    <mat-icon color="warn">delete_outline</mat-icon>
+                    <span>Delete</span>
+                </button>
+            </ng-template>
+        </mat-menu>
+    </div>
+</div>

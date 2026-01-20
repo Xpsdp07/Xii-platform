@@ -19,5 +19,24 @@
       "target": "http://127.0.0.1:1881",
       "secure": false,
       "changeOrigin": true
+    },
+
+    "/widgets-catalog": {
+      "target": "http://127.0.0.1:1881",
+      "secure": false,
+      "changeOrigin": true
+    },
+    "/editor/widgets-catalog": {
+      "target": "http://127.0.0.1:1881",
+      "secure": false,
+      "changeOrigin": true,
+      "pathRewrite": {
+        "^/editor": ""
+      }
+    },
+    "/api": {
+      "target": "http://127.0.0.1:1881",
+      "secure": false,
+      "changeOrigin": true
     }
 }

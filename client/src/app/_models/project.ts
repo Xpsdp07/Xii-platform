@@ -13,6 +13,8 @@ import { ClientAccess } from './client-access';
 
 export class ProjectData {
     version = '1.01';
+    /** Project Id */
+    id: string;
     /** Project name */
     name?: string;
     /** FUXA Server */
@@ -43,6 +45,18 @@ export class ProjectData {
     mapsLocations: MapsLocation[] = [];
     /** ClientAccess */
     clientAccess = new ClientAccess();
+
+    constructor(_id: string) {
+        this.id = _id;
+    }
+}
+
+/** prefix used for project id */
+export const PROJECT_PREFIX = "p_";
+export class Project {
+    id: string;
+    /** Project Data */
+    data: ProjectData;
 }
 
 export enum ProjectDataCmdType {

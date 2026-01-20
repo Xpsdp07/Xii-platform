@@ -3,15 +3,16 @@ import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { WidgetsResource } from '../../_models/resources';
 import { MyFileService, TransferResult } from '../../_services/my-file.service';
+import { WidgetsCatalogResponse } from '../../_models/widgets-catalog';
 
 @Injectable({
     providedIn: 'root'
 })
 export class KioskWidgetsService {
 
-    endPointWidgetResources = 'https://frangoteam.org/api/list-widgets.php';
+    endPointWidgetResources = '/api/widgets-catalog';
     resourceWidgets$: Observable<WidgetsResource[]>;
-    widgetAssetBaseUrl = 'https://frangoteam.org/widgets/';
+    widgetAssetBaseUrl = '';
 
     constructor(
         private http: HttpClient,

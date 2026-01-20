@@ -5,11 +5,14 @@
 var express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const authJwt = require('../jwt-helper');
 
 var runtime;
 var secretCode;
 var tokenExpiresIn;
+
+// RBAC imports
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 module.exports = {
     init: function (_runtime, _secretCode, _tokenExpires) {
@@ -17,8 +20,10 @@ module.exports = {
         secretCode = _secretCode;
         tokenExpiresIn = _tokenExpires;
     },
+
     app: function () {
         var authApp = express();
+
         authApp.use(function (req, res, next) {
             if (!runtime.project) {
                 res.status(404).end();
@@ -28,44 +33,153 @@ module.exports = {
         });
 
         /**
-         * POST SignIn
-         * Sign In with User credentials
+         * POST /api/signin
+         * Validate user, fetch permissions, and issue JWT
          */
-        authApp.post('/api/signin', function (req, res, next) {
-            runtime.users.findOne(req.body).then(function (userInfo) {
-                if (userInfo && userInfo.length && userInfo[0].password) {
-                    if (bcrypt.compareSync(req.body.password, userInfo[0].password)) {
-                        const token = jwt.sign({ id: userInfo[0].username, groups: userInfo[0].groups }, secretCode, { expiresIn: tokenExpiresIn });//'1h' });
-                        res.json({
-                            status: 'success',
-                            message: 'user found!!!',
-                            data: {
-                                username: userInfo[0].username,
-                                fullname: userInfo[0].fullname,
-                                groups: userInfo[0].groups,
-                                info: userInfo[0].info,
-                                token: token
+        authApp.post('/api/signin', async function (req, res) {
+            try {
+                const { username, password } = req.body;
+
+                // 1) Find user
+                const user = await prisma.user.findUnique({
+                    where: { username },
+                    include: { groups: true }
+                });
+
+                if (!user) {
+                    return res
+                        .status(401)
+                        .json({ status: 'error', message: 'Invalid username/password' });
+                }
+
+                // 2) Validate password
+                const match = await bcrypt.compare(password, user.password);
+                if (!match) {
+                    return res
+                        .status(401)
+                        .json({ status: 'error', message: 'Invalid username/password' });
+                }
+
+                // 3) Load full RBAC structure
+                const fullUser = await prisma.user.findUnique({
+                    where: { id: user.id },
+                    include: {
+                        groups: {
+                            include: {
+                                group: {
+                                    include: {
+                                        GroupPermissions: {
+                                            include: { GroupPermission: true }
+                                        },
+                                        modulePermissions: {
+                                            include: {
+                                                module: true,
+                                                permission: true
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                        });
-                        runtime.logger.info('api-signin: ' + userInfo[0].username + ' ' + userInfo[0].fullname + ' ' + userInfo[0].groups);
-                    } else {
-                        res.status(401).json({ status: 'error', message: 'Invalid email/password!!!', data: null });
-                        runtime.logger.error('api post signin: Invalid email/password!!!');
+                        },
+                        modules: {
+                            include: {
+                                module: {
+                                    include: {
+                                        permissions: {
+                                            include: { permission: true }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
-                } else {
-                    res.status(404).end();
-                    runtime.logger.error('api post signin: Not Found!');
-                }
-            }).catch(function (err) {
-                if (err.code) {
-                    res.status(400).json({error:err.code, message: err.message});
-                } else {
-                    res.status(400).json({error:'unexpected_error', message:err.toString()});
-                }
-                runtime.logger.error('api post signin: ' + err.message);
-            });
+                });
+
+                /**
+                 * EXTRACT GROUP PERMISSIONS (Global)
+                 */
+                const groupPermissions =
+                    fullUser.groups.flatMap(g =>
+                        (g.group?.GroupPermissions || []).map(j => j.GroupPermission?.name).filter(Boolean)
+                    );
+                console.log("Global group permissions:", groupPermissions);
+
+                /**
+                 * EXTRACT MODULE PERMISSIONS (from Groups)
+                 */
+                const groupModulePermissions =
+                    fullUser.groups.flatMap(g =>
+                        (g.group?.modulePermissions || []).map(mp => (mp.module && mp.permission) ? `${mp.module.name}.${mp.permission.name}` : null).filter(Boolean)
+                    );
+                console.log("Module permissions from groups:", groupModulePermissions);
+
+                /**
+                 * EXTRACT DIRECT MODULE PERMISSIONS (User Overrides - Prototype)
+                 */
+                const directModulePermissions =
+                    fullUser.modules.flatMap(m =>
+                        (m.module?.permissions || []).map(j => (m.module && j.permission) ? `${m.module.name}.${j.permission.name}` : null).filter(Boolean)
+                    );
+                console.log("Direct module permissions:", directModulePermissions);
+
+                /**
+                 * FINAL PERMISSIONS (deduplicated)
+                 */
+                const permissions = [...new Set([
+                    ...groupPermissions,
+                    ...groupModulePermissions,
+                    ...directModulePermissions
+                ])];
+
+                console.log("Final effective permissions for user:", username, permissions);
+
+                /**
+                 * FUXA Legacy Group Value (FOR OLD FLOW)
+                 */
+                const fuxaUN = fullUser.groups.reduce((s, g) => s + (g.group.un || 0), 0);
+                const fuxaSuperUN = fullUser.groups.reduce((s, g) => s + (g.group.super_un || 0), 0);
+                const fuxaGroupsValue = fuxaUN + fuxaSuperUN;
+
+                console.log("fuxaGroupsValue:", fuxaGroupsValue);
+
+                const fuxaUser = {
+                    username: fullUser.username,
+                    fullname: fullUser.fullName,
+                    groups: -1, // legacy for compatibility
+                    info: fullUser.info,
+                    permissions // 🔥 send permissions to frontend
+                };
+
+                // 4) Issue JWT
+                const token = jwt.sign(
+                    {
+                        id: fuxaUser.username,
+                        groups: fuxaUser.groups,
+                        permissions: permissions  // optional: embed into token
+                    },
+                    secretCode,
+                    { expiresIn: tokenExpiresIn }
+                );
+
+                // 5) Send response
+                return res.json({
+                    status: 'success',
+                    message: 'user authenticated',
+                    data: {
+                        ...fuxaUser,
+                        token
+                    }
+                });
+
+            } catch (err) {
+                console.error("SIGNIN ERROR:", err);
+                return res.status(400).json({
+                    status: 'error',
+                    message: err.toString()
+                });
+            }
         });
 
         return authApp;
     }
-}
+};

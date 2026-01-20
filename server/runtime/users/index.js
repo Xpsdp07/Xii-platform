@@ -5,6 +5,8 @@
 'use strict';
 
 const usrstorage = require('./usrstorage');
+const rbacManager = require('../../api/rbac/rbac-manager');
+const bcrypt = require('bcryptjs');
 
 const version = '1.00';
 var settings;                   // Application settings
@@ -48,37 +50,135 @@ function init(_settings, log) {
 /**
  * Get the users list
  */
-function getUsers(user) {
-    return new Promise(function (resolve, reject) {
-        usrstorage.getUsers(user).then(drows => {
-            if (drows.length > 0) {
-                resolve(drows);
-            } else {
-                resolve();
+function getUsers(query) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const users = await rbacManager.usersService.findAll();
+
+            // Format to match old Fuxa expectations
+            const result = users.map(u => {
+                // Calculate legacy bitmask from group UNs
+                const groupMask = u.groups.reduce((mask, ug) => {
+                    return mask | (ug.group.un || 0);
+                }, 0);
+
+                return {
+                    username: u.username,
+                    fullname: u.fullName,
+                    password: u.password,
+                    groups: groupMask,
+                    info: u.info
+                };
+            });
+
+            if (query && query.username) {
+                const filtered = result.filter(u => u.username === query.username);
+                return resolve(filtered.length > 0 ? filtered : null);
             }
-        }).catch(function (err) {
-            logger.error(`users.usrstorage-get-users-list failed! ${err}`);
+
+            resolve(result.length > 0 ? result : null);
+        } catch (err) {
+            logger.error(`users.rbac-get-users failed! ${err}`);
             reject(err);
-        });
+        }
     });
 }
 
 /**
  * Set the user
  */
+/**
+ * Set the user (Create or Update)
+ */
 function setUsers(query) {
-    return new Promise(function (resolve, reject) {
-        if (query.username) {
-            usrstorage.setUser(query.username, query.fullname, query.password, query.groups, query.info).then(() => {
-                resolve();
-                const info = JSON.parse(query.info);
-                usersMap.set(query.username, { info: info, groups: query.groups });
-            }).catch(function (err) {
-                logger.error(`users.usrstorage-set-users failed! ${err}`);
-                reject(err);
+    return new Promise(async (resolve, reject) => {
+        if (!query.username) {
+            return reject(new Error("Username is required"));
+        }
+
+        try {
+            // Check if user exists
+            const existingUser = await rbacManager.usersService.findOne(query.username);
+
+            let user;
+            const userData = {
+                username: query.username,
+                fullName: query.fullname || query.fullName,
+                info: query.info || ""
+            };
+
+            if (query.password) {
+                userData.password = bcrypt.hashSync(query.password, 10);
+            }
+
+            if (existingUser) {
+                // UPDATE
+                user = await rbacManager.prismaService.user.update({
+                    where: { username: query.username },
+                    data: userData
+                });
+
+                // Update groups if provided
+                if (query.groups !== undefined) {
+                    const allGroups = await rbacManager.groupsService.getAllGroups();
+                    let matchedGroups;
+                    if (Array.isArray(query.groups)) {
+                        matchedGroups = allGroups.filter(g => query.groups.includes(g.id));
+                    } else {
+                        const bitmask = parseInt(query.groups);
+                        matchedGroups = allGroups.filter(g => (g.un & bitmask) || (g.name.toLowerCase() === 'admin' && bitmask === -1));
+                    }
+
+                    // Reset and set new groups
+                    await rbacManager.prismaService.userGroup.deleteMany({ where: { userId: user.id } });
+                    await rbacManager.prismaService.userGroup.createMany({
+                        data: matchedGroups.map(g => ({ userId: user.id, groupId: g.id }))
+                    });
+                }
+            } else {
+                // CREATE
+                const allGroups = await rbacManager.groupsService.getAllGroups();
+                let matchedGroups;
+                if (Array.isArray(query.groups)) {
+                    // New RBAC IDs
+                    matchedGroups = allGroups.filter(g => query.groups.includes(g.id));
+                } else if (query.groups !== undefined) {
+                    // Legacy bitmask
+                    const bitmask = parseInt(query.groups);
+                    matchedGroups = allGroups.filter(g => (g.un & bitmask) || (g.name.toLowerCase() === 'admin' && bitmask === -1));
+                } else {
+                    matchedGroups = [];
+                }
+
+                user = await rbacManager.prismaService.user.create({
+                    data: {
+                        ...userData,
+                        password: userData.password || bcrypt.hashSync('123456', 10),
+                        groups: {
+                            create: matchedGroups.map(g => ({ groupId: g.id }))
+                        }
+                    }
+                });
+            }
+
+            // Calculate legacy bitmask for cache
+            const allMatchedGroups = await rbacManager.prismaService.userGroup.findMany({
+                where: { userId: user.id },
+                include: { group: true }
             });
-        } else {
-            reject();
+            const legacyGroups = allMatchedGroups.map(ug => ug.group.un || 0);
+            const bitmask = legacyGroups.reduce((acc, current) => acc | current, 0);
+
+            // Sync cache
+            usersMap.set(user.username, {
+                info: user.info,
+                groups: bitmask
+            });
+
+            resolve(user);
+        } catch (err) {
+            logger.error(`users.rbac-set-users failed! ${err}`);
+            reject(err);
         }
     });
 }

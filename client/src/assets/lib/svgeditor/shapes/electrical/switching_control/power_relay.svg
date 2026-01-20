@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+
+  <rect x="16" y="16" width="68" height="68" rx="6" fill="#fff"/>
+
+  <!-- coil -->
+  <rect x="28" y="26" width="28" height="18"
+        fill="none" stroke="#000" stroke-width="4"/>
+
+  <!-- coil terminals -->
+  <line x1="20" y1="35" x2="28" y2="35"
+        stroke="#000" stroke-width="4"/>
+  <line x1="56" y1="35" x2="64" y2="35"
+        stroke="#000" stroke-width="4"/>
+
+  <!-- NO contact -->
+  <circle cx="70" cy="56" r="4" fill="#000"/>
+  <circle cx="70" cy="72" r="4" fill="#000"/>
+  <line x1="52" y1="64" x2="70" y2="56"
+        stroke="#000" stroke-width="4"/>
+
+</svg>

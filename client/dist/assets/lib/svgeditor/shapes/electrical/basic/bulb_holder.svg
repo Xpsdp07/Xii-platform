@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 60 60">
+
+  <!-- Base plate -->
+  <rect x="5" y="35" width="50" height="18"
+        rx="3" ry="3"
+        fill="#e0e0e0" stroke="#555" stroke-width="1.3" />
+
+  <!-- Center socket -->
+  <ellipse cx="30" cy="35" rx="12" ry="7"
+           fill="#f7f7f7" stroke="#555" stroke-width="1.3" />
+
+  <!-- Top ring -->
+  <ellipse cx="30" cy="30" rx="9" ry="4"
+           fill="#fafafa" stroke="#555" stroke-width="1" />
+
+  <!-- Screw marks -->
+  <circle cx="15" cy="44" r="2" fill="#777" />
+  <circle cx="45" cy="44" r="2" fill="#777" />
+</svg>

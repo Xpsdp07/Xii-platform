@@ -1,0 +1,18 @@
+{
+  "name": "Red Beacon / Buzzer",
+  "type": "beacon-red",
+  "group": "Indicators",
+  "version": "1.0",
+
+  "preview": "beacon_red.svg",
+  "widget": "beacon_red.svg",
+
+  "properties": {
+    "tag": "",
+    "mode": "limit",
+    "limit": 80,
+    "onColor": "red",
+    "offColor": "darkred",
+    "blink": true
+  }
+}

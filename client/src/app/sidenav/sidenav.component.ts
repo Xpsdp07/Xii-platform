@@ -79,7 +79,13 @@ export class SidenavComponent implements AfterContentChecked {
         if (this.layout.navigation) {
             this.layoutNavigation = this.layout.navigation;
             this.logo = this.layout.navigation.logo;
-            this.layout.navigation.items?.forEach(item => {
+
+            // ✅ Ensure items exists
+            if (!Array.isArray(this.layout.navigation.items)) {
+                this.layout.navigation.items = [];
+            }
+
+            this.layout.navigation.items.forEach(item => {
                 item.text = this.languageService.getTranslation(item.text) ?? item.text;
                 if (!item.id) {
                     item.id = Utils.getShortGUID();
@@ -91,6 +97,20 @@ export class SidenavComponent implements AfterContentChecked {
                     }
                 });
             });
+
+            // ✅ Add Simulation menu item if it’s not already in the list
+            const alreadyHasSimulation = this.layout.navigation.items
+                .some(i => i.view === 'simulationpage');
+
+            if (!alreadyHasSimulation) {
+                this.layout.navigation.items.push({
+                    id: Utils.getShortGUID(),
+                    text: 'Simulation',
+                    icon: 'science',   // any Angular Material icon
+                    view: 'simulationpage'
+                } as NaviItem);
+            }
         }
     }
 }
+        

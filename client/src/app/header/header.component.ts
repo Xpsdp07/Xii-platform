@@ -16,6 +16,7 @@ import { HelpData, DEVICE_READONLY } from '../_models/hmi';
 import { TutorialComponent } from '../help/tutorial/tutorial.component';
 import { TranslateService } from '@ngx-translate/core';
 import { EditNameComponent } from '../gui-helpers/edit-name/edit-name.component';
+import Rotate from 'xgplayer/es/plugins/rotate';
 
 const editorModeRouteKey = ['/editor', '/device', '/messages', '/language', '/users', '/userRoles', '/notifications', '/scripts', '/reports', '/materials', '/logs', '/events', '/mapsLocations'];
 const saveFromEditorRouteKey = ['/device', '/messages', '/language', '/users', '/userRoles', '/notifications', '/scripts', '/reports', '/materials', '/logs', '/events', '/mapsLocations'];
@@ -158,12 +159,13 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
     }
 
     /**
-     * Aave Project as JSON file and Download in Browser
+     * save Project as JSON file and Download in Browser
      */
     onSaveProjectAs() {
         try {
             if (this.saveFromEditor) {
-                this.projectService.saveAs();
+                // this.projectService.saveAs();
+                this.projectService.saveAsToDB();
             } else {
                 this.projectService.saveProject(SaveMode.SaveAs);
             }
@@ -230,6 +232,13 @@ export class HeaderComponent implements AfterViewInit, OnDestroy {
         });
     }
     //#endregion
+
+    /**
+     * List of projects route
+     */
+    onProjects(){
+        this.router.navigate(['/projects']);
+    }
 }
 
 

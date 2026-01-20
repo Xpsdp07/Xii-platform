@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+
+  <!-- inner white background -->
+  <rect x="16" y="16" width="68" height="68" rx="6" fill="#fff"/>
+
+  <!-- coil -->
+  <rect x="30" y="24" width="40" height="18"
+        fill="none" stroke="#000" stroke-width="4"/>
+
+  <!-- coil terminals -->
+  <line x1="22" y1="33" x2="30" y2="33"
+        stroke="#000" stroke-width="4"/>
+  <line x1="70" y1="33" x2="78" y2="33"
+        stroke="#000" stroke-width="4"/>
+
+  <!-- 3 main contacts -->
+  <line x1="30" y1="54" x2="30" y2="74" stroke="#000" stroke-width="4"/>
+  <line x1="50" y1="54" x2="50" y2="74" stroke="#000" stroke-width="4"/>
+  <line x1="70" y1="54" x2="70" y2="74" stroke="#000" stroke-width="4"/>
+
+</svg>

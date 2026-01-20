@@ -8,7 +8,7 @@
 
 .sidepanel-selector {
     position: fixed;
-    margin-top: 36px;
+    margin-top: 35px;
     height: calc(100% - 74px);
     padding: 7px;
     width: 370px;
@@ -30,6 +30,78 @@
     top: 0px;
     left: 0px;
 }
+
+
+.manage-attributes{
+    margin-top: 2px;
+
+}
+.Generate-BOM{
+    margin-left: 2px;
+    margin-top: 1px;
+
+}
+
+
+.custom-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 999;
+}
+
+.custom-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 900px;
+  height: 500px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  z-index: 1000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+} 
+
+
+/* Container for horizontal layout */
+/* .header-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 60px;
+} */
+
+/*  */
+
+/* Text styling */
+
+
+/* Glow effect */
+/* #logoname::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0,198,255,0.2) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+#logoname:hover::before {
+    opacity: 1;
+} */
+
+/* reference panel */
+
 
 .svg-workarea-toolbar {
     min-height: 46px;
@@ -292,6 +364,7 @@
 }
 
 .svg-element-selected {
+    top:60px;
     display: inline-flex;
 }
 
@@ -754,4 +827,47 @@ select#start_marker option[value="D"] {
 }
 .icon-iframe {
     background: url("/assets/images/iframe.svg") no-repeat center center;
+}
+
+/* overall menu container */
+.palette-menu-panel {
+  padding: 8px !important;
+  background: #2c2c2c;
+  border-radius: 8px;
+  max-width: 200px;
+}
+
+/* grid layout for swatches */
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
+  gap: 6px;
+  justify-items: center;
+}
+
+/* each color swatch */
+.palette-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  min-width: 24px !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+/* hover / focus feedback */
+.palette-swatch:hover {
+  transform: scale(1.1);
+  border-color: white;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+}
+
+/* tooltip hint */
+.palette-menu-hint {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
 }

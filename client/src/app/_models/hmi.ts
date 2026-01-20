@@ -10,6 +10,18 @@ export class Hmi {
     views: View[] = [];
 }
 
+// custom added
+
+export interface BOMItem{
+    slno:number;
+    item:string;
+    quantity:number;
+    remarks:string;
+    id:string;
+    customAttributes?:{[key:string]:any};
+}
+
+
 export class View {
     /** View id, random number */
     id = '';
@@ -23,16 +35,32 @@ export class View {
     variables: DictionaryVariables = {};
     /** Svg code content of the view  */
     svgcontent = '';
+
+    /** Connections between blocks in the view */
+    moduleType: ViewModuleType;
+
+
     /** Type of view SVG/CARDS */
     type: ViewType;
     /** Property with events of view like Open or Close */
     property: ViewProperty;
 
-    constructor(id?: string, type?: ViewType, name?: string) {
+    // BOM material
+    bom:BOMItem[]=[]; 
+    
+
+
+    constructor(id?: string, type?: ViewType, name?: string, moduleType?: ViewModuleType) {
         this.id = id;
         this.name = name;
         this.type = type;
+        this.moduleType = moduleType;
     }
+}
+
+export enum ViewModuleType {
+    'design',
+    'controls',
 }
 
 export enum ViewType {
@@ -203,6 +231,8 @@ export class GaugeSettings {
     label = '';             // Gauge type label
     hide = false;
     lock = false;
+    customAttributes?: { [key: string]: any };    // Custom attributes
+
     constructor(public id: string, public type: string) {
     }
 }
@@ -709,6 +739,10 @@ export interface IDateRange {
 export interface ISvgElement {
     id: string;
     name: string;
+    customAttributes?: { [key: string]: any };
+    tagName?: string;   // ✅ added
+    type?: string;      // ✅ added
+    
 }
 
 export class GaugeVideoProperty extends GaugeProperty {

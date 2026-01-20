@@ -3,9 +3,12 @@
         <mat-icon aria-label="Save Project">save</mat-icon>
     </button>
     <mat-menu #prjview="matMenu" class="leftbar-item-menu header-menu" yPosition="below" [overlapTrigger]="false">
-        <button mat-menu-item (click)="onNewProject()">{{'header.new-project' | translate}}</button>
+        <button mat-menu-item (click)="onProjects()">{{'header.projects' | translate}}</button>
         <mat-divider class="menu-separator"></mat-divider>
+        <!-- <button mat-menu-item (click)="onNewProject()">{{'header.new-project' | translate}}</button> -->
+        <!-- <mat-divider class="menu-separator"></mat-divider> -->
         <button mat-menu-item (click)="onSaveProject()">{{'header.save-project' | translate}}</button>
+        <mat-divider class="menu-separator"></mat-divider>
         <button mat-menu-item (click)="onSaveProjectAs()">{{'header.saveas-project' | translate}}</button>
         <mat-divider class="menu-separator"></mat-divider>
         <button mat-menu-item (click)="onOpenProject();$event.stopPropagation()">{{'header.open-project' | translate}}</button>
@@ -18,7 +21,7 @@
     </button>
 
 </div>
-
+<!-- 
 <div class="header-right" *ngIf="editorMode">
     <div class="header-help">
         <button mat-button title="{{'header.help' | translate}}" [matMenuTriggerFor]="helpmenu" class="main-btn">
@@ -32,5 +35,5 @@
             <button mat-menu-item (click)="onChangeTheme()">{{'header.change-thema' | translate}}</button>
         </mat-menu>
     </div>
-</div>
+</div> -->
 <app-tutorial #tutorial></app-tutorial>

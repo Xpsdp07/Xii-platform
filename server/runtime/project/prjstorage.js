@@ -5,6 +5,7 @@
 
 'use strict';
 
+const { log } = require('console');
 const fs = require('fs');
 const path = require('path');
 var sqlite3 = require('sqlite3').verbose();
@@ -50,6 +51,7 @@ function _bind() {
         sql += "CREATE TABLE if not exists scripts (name TEXT PRIMARY KEY, value TEXT);";
         sql += "CREATE TABLE if not exists reports (name TEXT PRIMARY KEY, value TEXT);";
         sql += "CREATE TABLE if not exists locations (name TEXT PRIMARY KEY, value TEXT);";
+        sql += "CREATE TABLE if not exists projects (name TEXT PRIMARY KEY, value TEXT)"
         db_prj.exec(sql, function (err) {
             if (err) {
                 logger.error(`prjstorage.bind failed! ${err}`);
@@ -153,8 +155,10 @@ function deleteSection(section) {
         var sql = "DELETE FROM " + section.table + " WHERE name = '" + section.name + "'";
         db_prj.run(sql, function (err, rows) {
             if (err) {
+                logger.error(`prjs.storage.record-delete.${section.table} failed. ${err}`);
                 reject(err);
             } else {
+                logger.info(`prjs.storage.record-delete.${section.table} success!`)
                 resolve();
             }
         });
@@ -210,6 +214,7 @@ const TableType = {
     SCRIPTS: 'scripts',
     REPORTS: 'reports',
     LOCATIONS: 'locations',
+    PROJECTS: 'projects',
 }
 
 module.exports = {

@@ -4,14 +4,16 @@
 </div>
 <mat-drawer #svgSelectorPanel class="sidepanel-selector" mode="side" position="end">
     <button mat-icon-button (click)="svgSelectorPanel.toggle()" style="position: absolute; top: 3px; right: 3px;">
-        <mat-icon>close</mat-icon>
+     <mat-icon>close</mat-icon>
     </button>
     <button mat-icon-button (click)="checkSvgElementsMap(true)" style="position: absolute; top: 3px; right: 40px;">
-        <mat-icon>autorenew</mat-icon>
+    <mat-icon>autorenew</mat-icon>
     </button>
     <app-svg-selector (onSelect)="onSvgElementSelected($event)" (onPreview)="onSvgElementPreview($event)" (onEdit)="onGaugeEdit($event)" [elements]="svgElements" [selected]="svgElementSelected"></app-svg-selector>
+                
 </mat-drawer>
 <mat-drawer #sidePanel class="editor-sidenav" mode="side" position="end">
+    
     <button mat-icon-button (click)="sidePanel.toggle()" style="position: absolute; top: 3px; right: 3px;">
         <mat-icon>close</mat-icon>
     </button>
@@ -39,8 +41,26 @@
         </div>
     </div>
 </mat-drawer>
+
+<!-- REFERENCE VIEWER DRAWER -->
+<mat-drawer #referencePanel class="sidepanel-selector"
+            mode="side"
+            position="end">
+
+    <button mat-icon-button (click)="referencePanel.toggle()"
+            style="position:absolute; top:10px; right:10px;">
+        <mat-icon>close</mat-icon>
+    </button>
+
+    <app-reference-viewer></app-reference-viewer>
+
+</mat-drawer>
+
+
 <div id="svg_editor_container">
+
     <mat-drawer-container class="svg-workarea-container">
+        
         <!-- LEFT BAR -->
         <mat-drawer mode="side" opened="true" class="svg-sidenav leave-header-area" disableClose>
             <mat-accordion multi="true">
@@ -70,192 +90,362 @@
                         </app-editor-views-list>
                     </div>
                 </mat-expansion-panel>
+
                 <div *ngIf="editorMode === editorModeType.SVG">
-                    <mat-expansion-panel class="svg-workarea-leftbar-p" (opened)="panelsState.panelGeneral=true;savePanelState()"
-                        (closed)="panelsState.panelGeneral=false;savePanelState()" hideToggle="true" [expanded]="panelsState.panelGeneral">
+                    <mat-expansion-panel
+                        class="svg-workarea-leftbar-p"
+                        (opened)="panelsState.panelGeneralToolKit = true; savePanelState()"
+                        (closed)="panelsState.panelGeneralToolKit = false; savePanelState()"
+                        hideToggle="true"
+                        [expanded]="panelsState.panelGeneralToolKit">
                         <mat-expansion-panel-header class="svg-workarea-leftbar-h">
                             <mat-panel-title>
-                                <mat-icon aria-label="Select" *ngIf="panelsState.panelGeneral">expand_less</mat-icon>
-                                <mat-icon aria-label="Select" *ngIf="!panelsState.panelGeneral">expand_more</mat-icon>
-                                <span>{{'editor.general' | translate}}</span> <!-- GENERAL -->
+                                <mat-icon aria-label="Select" *ngIf="panelsState.panelGeneralToolKit">expand_less</mat-icon>
+                                <mat-icon aria-label="Select" *ngIf="!panelsState.panelGeneralToolKit">expand_more</mat-icon>
+                                <!-- <span>Toolkit-1</span> -->
+                                <span>{{ 'editor.general-toolkit' | translate }}</span>
+                                <!-- or: <span>{{ 'editor.toolkit-1' | translate }}</span> if you add a key -->
+                            </mat-panel-title>
+                        </mat-expansion-panel-header>
+                        
+
+                        <!-- Lazy-load the whole toolkit area -->
+                        <ng-template matExpansionPanelContent>
+                            <!-- Keep inner panels behaving the same: -->
+                            <mat-accordion multi="true">
+                                <!-- GENERAL -->
+                                <mat-expansion-panel class="svg-workarea-leftbar-p"
+                                    (opened)="panelsState.panelGeneral=true;savePanelState()"
+                                    (closed)="panelsState.panelGeneral=false;savePanelState()"
+                                    hideToggle="true"
+                                    [expanded]="panelsState.panelGeneral">
+                                    <mat-expansion-panel-header class="svg-workarea-leftbar-h">
+                                        <mat-panel-title>
+                                            <mat-icon aria-label="Select" *ngIf="panelsState.panelGeneral">expand_less</mat-icon>
+                                            <mat-icon aria-label="Select" *ngIf="!panelsState.panelGeneral">expand_more</mat-icon>
+                                            <span>{{'editor.general' | translate}}</span> 
+                                        </mat-panel-title>
+                                    </mat-expansion-panel-header>
+
+                                    <div id="__tools_left" class="leftbar-panel h200">
+                                        <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('select')}" matTooltip="{{'editor.tools-select' | translate}}" (click)="setMode('select')">
+                                            <span class="icon-select"></span>
+                                        </div>
+                                        <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('fhpath')}" matTooltip="{{'editor.tools-pencil' | translate}}" (click)="setMode('fhpath')">
+                                            <span class="icon-pencil"></span>
+                                        </div>
+                                        <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('line')}" matTooltip="{{'editor.tools-line' | translate}}" (click)="setMode('line')">
+                                            <span class="icon-line"></span>
+                                        </div>
+                                        <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('rect')}" matTooltip="{{'editor.tools-rectangle' | translate}}" (click)="setMode('rect')">
+                                            <span class="icon-rect"></span>
+                                        </div>
+                                        <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('circle')}" matTooltip="{{'editor.tools-circle' | translate}}" (click)="setMode('circle')">
+                                            <span class="icon-circle"></span>
+                                        </div>
+                                        <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('ellipse')}" matTooltip="{{'editor.tools-ellipse' | translate}}" (click)="setMode('ellipse')">
+                                            <span class="icon-ellipse"></span>
+                                        </div>
+                                        <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('path')}" matTooltip="{{'editor.tools-path' | translate}}" (click)="setMode('path')">
+                                            <span class="icon-path"></span>
+                                        </div>
+                                        <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('text')}" matTooltip="{{'editor.tools-text' | translate}}" (click)="setMode('text')">
+                                            <span class="icon-text"></span>
+                                        </div>
+                                        <div class="svg-tool-button" [ngClass]="{'svg-tool-active': (isModeActive('image') || isModeActive('svg-image'))}" matTooltip="{{'editor.tools-image' | translate}}"
+                                            (click)="imagefile.value = '';imagefile.click();">
+                                            <span class="icon-image"></span>
+                                            <input #imagefile type="file" style="display: none;" (change)="onSetImage($event)" accept="image/png|jpg|svg" />
+                                        </div>
+                                        <div id="tool_line" style="display: none;">
+                                            <span class="icon-image"></span>
+                                        </div>
+                                    </div>
+                                </mat-expansion-panel>
+                                <!-- CONTROLS  -->
+                                <mat-expansion-panel class="svg-workarea-leftbar-p" (opened)="panelsState.panelD=true;savePanelState()" (closed)="panelsState.panelD=false;savePanelState()"
+                                    hideToggle="true" [expanded]="panelsState.panelD">
+                                    <mat-expansion-panel-header class="svg-workarea-leftbar-h">
+                                        <mat-panel-title>
+                                            <mat-icon aria-label="Select" *ngIf="panelsState.panelD">expand_less</mat-icon>
+                                            <mat-icon aria-label="Select" *ngIf="!panelsState.panelD">expand_more</mat-icon>
+                                            <span>{{'editor.controls' | translate}}</span>
+                                        </mat-panel-title>
+                                    </mat-expansion-panel-header>
+                                    <div id="__tools_left" class="leftbar-panel h200">
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-input' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_input')}"
+                                            (click)="setMode('html_input')">
+                                            <span class="icon-tool icon-editvalue"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-output' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('value')}"
+                                            (click)="setMode('value')">
+                                            <span class="icon-tool icon-value"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-button' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_button')}"
+                                            (click)="setMode('html_button')">
+                                            <span class="icon-tool icon-button"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-select' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_select')}"
+                                            (click)="setMode('html_select')">
+                                            <span class="icon-tool icon-selectvalue"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-progress' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('gauge_progress')}"
+                                            (click)="setMode('gauge_progress')">
+                                            <span class="icon-tool icon-progress-v"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-semaphore' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('gauge_semaphore')}"
+                                            (click)="setMode('gauge_semaphore')">
+                                            <span class="icon-tool icon-semaphore"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-chart' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_chart')}"
+                                            (click)="setMode('html_chart')">
+                                            <span class="icon-tool icon-chart"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-bag' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_bag')}"
+                                            (click)="setMode('html_bag')">
+                                            <span class="icon-tool icon-bag"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-pipe' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('pipe')}"
+                                            (click)="setMode('pipe')">
+                                            <span class="icon-tool icon-pipe"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-slider' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_slider')}"
+                                            (click)="setMode('html_slider')">
+                                            <span class="icon-tool icon-slider"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-switch' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_switch')}"
+                                            (click)="setMode('html_switch')">
+                                            <span class="icon-tool icon-switch"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-graphbar' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_graph-bar')}"
+                                            (click)="setMode('html_graph-bar')">
+                                            <span class="icon-tool icon-graphbar"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-table' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('own_ctrl-table')}"
+                                            (click)="setMode('own_ctrl-table')">
+                                            <span class="icon-tool icon-table"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-iframe' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('own_ctrl-iframe')}"
+                                            (click)="setMode('own_ctrl-iframe')">
+                                            <span class="icon-tool icon-iframe"></span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-graphpie' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_graph-pie')}"
+                                            (click)="setMode('html_graph-pie')">
+                                            <span class="material-icon-tool material-icons">pie_chart</span>
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-image' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('own_ctrl-image')}"
+                                            (click)="imageLink.value = '';imageLink.click()">
+                                            <span class="material-icon-tool material-icons">photo_size_select_actual</span>
+                                            <input #imageLink type="file" style="display: none;" (change)="onSetImageAsLink($event)" accept="image/png|jpg|svg" />
+                                        </div>
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-panel' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('own_ctrl-panel')}"
+                                            (click)="setMode('own_ctrl-panel')">
+                                            <span class="material-icon-tool material-icons" style="font-size: 25px;">web_asset</span>
+                                        </div>
+                                    </div>
+                                </mat-expansion-panel>
+                                <!-- SHAPES -->
+                                <mat-expansion-panel *ngFor="let shGrp of normalShapeGroups" class="svg-workarea-leftbar-p" (opened)="panelsState[shGrp.name]=true;savePanelState()"
+                                    (closed)="panelsState[shGrp.name]=false;savePanelState()" hideToggle="true" [expanded]="panelsState[shGrp.name]">
+                                    <mat-expansion-panel-header class="svg-workarea-leftbar-h">
+                                        <mat-panel-title>
+                                            <mat-icon aria-label="Select" *ngIf="panelsState[shGrp.name]">expand_less</mat-icon>
+                                            <mat-icon aria-label="Select" *ngIf="!panelsState[shGrp.name]">expand_more</mat-icon>
+                                            <span>{{shGrp.name | translate}}</span>
+                                        </mat-panel-title>
+                                    </mat-expansion-panel-header>
+                                    <div id="__tools_left" class="leftbar-panel h200">
+                                        <div *ngFor="let shape of shGrp.shapes" style="margin-left: 3px;margin-right: 3px;" class="svg-tool-button"
+                                            [ngClass]="{'svg-tool-active': isModeActive(shape.name)}" (click)="setMode(shape.name)">
+                                            <span class="icon-tool" [style.backgroundImage]="'url(' + shape.ico + ')'"> </span>
+                                        </div>
+                                    </div>
+                                </mat-expansion-panel>
+                                <!-- WIDGETS -->
+                                <mat-expansion-panel class="svg-workarea-leftbar-p" (opened)="panelsState.panelWidgets=true;savePanelState()" (closed)="panelsState.panelWidgets=false;savePanelState()"
+                                    hideToggle="true" [expanded]="panelsState.panelWidgets">
+                                    <mat-expansion-panel-header class="svg-workarea-leftbar-h">
+                                        <mat-panel-title>
+                                            <mat-icon aria-label="Select" *ngIf="panelsState.panelWidgets">expand_less</mat-icon>
+                                            <mat-icon aria-label="Select" *ngIf="!panelsState.panelWidgets">expand_more</mat-icon>
+                                            <span>{{ 'resources.lib-widgets' | translate }}</span>
+                                        </mat-panel-title>
+                                        <mat-icon class="leftbar-edit-btn" (click)="onWidgetKiosk();$event.stopPropagation()">widgets</mat-icon>
+                                    </mat-expansion-panel-header>
+                                    <ng-template matExpansionPanelContent>
+                                        <app-lib-widgets>
+                                        </app-lib-widgets>
+                                    </ng-template>
+                                </mat-expansion-panel>
+                                <!-- RESOURCES -->
+                                <mat-expansion-panel class="svg-workarea-leftbar-p" hideToggle="true">
+                                    <mat-expansion-panel-header class="svg-workarea-leftbar-h" style="max-height: 32px;height: 32px">
+                                        <mat-panel-title>
+                                            <mat-icon aria-label="Select" style="color: rgba(255,255, 255,0.4)">expand_more</mat-icon>
+                                            <span>{{'editor.resources' | translate}}</span>
+                                        </mat-panel-title>
+                                        <mat-icon aria-label="Add" matTooltip="{{'editor.image-add' | translate}}" class="leftbar-edit-btn" (click)="onAddResource();$event.stopPropagation()">add
+                                        </mat-icon>
+                                    </mat-expansion-panel-header>
+                                </mat-expansion-panel>
+                            </mat-accordion>
+                        </ng-template>
+                    </mat-expansion-panel>
+
+                    <!-- ELECTRICAL TOOLKIT -->
+                    <mat-expansion-panel
+                        class="svg-workarea-leftbar-p"
+                        (opened)="panelsState.panelElectricalToolKit = true; savePanelState()"
+                        (closed)="panelsState.panelElectricalToolKit = false; savePanelState()"
+                        hideToggle="true"
+                        [expanded]="panelsState.panelElectricalToolKit">
+
+                        <mat-expansion-panel-header class="svg-workarea-leftbar-h">
+                            <mat-panel-title>
+                                <mat-icon *ngIf="panelsState.panelElectricalToolKit">expand_less</mat-icon>
+                                <mat-icon *ngIf="!panelsState.panelElectricalToolKit">expand_more</mat-icon>
+                                <span>Electrical Toolkit</span>
                             </mat-panel-title>
                         </mat-expansion-panel-header>
 
-                        <div id="__tools_left" class="leftbar-panel h200">
-                            <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('select')}" matTooltip="{{'editor.tools-select' | translate}}" (click)="setMode('select')">
-                                <span class="icon-select"></span>
-                            </div>
-                            <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('fhpath')}" matTooltip="{{'editor.tools-pencil' | translate}}" (click)="setMode('fhpath')">
-                                <span class="icon-pencil"></span>
-                            </div>
-                            <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('line')}" matTooltip="{{'editor.tools-line' | translate}}" (click)="setMode('line')">
-                                <span class="icon-line"></span>
-                            </div>
-                            <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('rect')}" matTooltip="{{'editor.tools-rectangle' | translate}}" (click)="setMode('rect')">
-                                <span class="icon-rect"></span>
-                            </div>
-                            <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('circle')}" matTooltip="{{'editor.tools-circle' | translate}}" (click)="setMode('circle')">
-                                <span class="icon-circle"></span>
-                            </div>
-                            <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('ellipse')}" matTooltip="{{'editor.tools-ellipse' | translate}}" (click)="setMode('ellipse')">
-                                <span class="icon-ellipse"></span>
-                            </div>
-                            <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('path')}" matTooltip="{{'editor.tools-path' | translate}}" (click)="setMode('path')">
-                                <span class="icon-path"></span>
-                            </div>
-                            <div class="svg-tool-button" [ngClass]="{'svg-tool-active': isModeActive('text')}" matTooltip="{{'editor.tools-text' | translate}}" (click)="setMode('text')">
-                                <span class="icon-text"></span>
-                            </div>
-                            <div class="svg-tool-button" [ngClass]="{'svg-tool-active': (isModeActive('image') || isModeActive('svg-image'))}" matTooltip="{{'editor.tools-image' | translate}}"
-                                (click)="imagefile.value = '';imagefile.click();">
-                                <span class="icon-image"></span>
-                                <input #imagefile type="file" style="display: none;" (change)="onSetImage($event)" accept="image/png|jpg|svg" />
-                            </div>
-                            <div id="tool_line" style="display: none;">
-                                <span class="icon-image"></span>
-                            </div>
-                        </div>
-                    </mat-expansion-panel>
-                    <!-- CONTROLS  -->
-                    <mat-expansion-panel class="svg-workarea-leftbar-p" (opened)="panelsState.panelD=true;savePanelState()" (closed)="panelsState.panelD=false;savePanelState()"
-                        hideToggle="true" [expanded]="panelsState.panelD">
-                        <mat-expansion-panel-header class="svg-workarea-leftbar-h">
-                            <mat-panel-title>
-                                <mat-icon aria-label="Select" *ngIf="panelsState.panelD">expand_less</mat-icon>
-                                <mat-icon aria-label="Select" *ngIf="!panelsState.panelD">expand_more</mat-icon>
-                                <span>{{'editor.controls' | translate}}</span>
-                            </mat-panel-title>
-                        </mat-expansion-panel-header>
-                        <div id="__tools_left" class="leftbar-panel h200">
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-input' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_input')}"
-                                (click)="setMode('html_input')">
-                                <span class="icon-tool icon-editvalue"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-output' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('value')}"
-                                (click)="setMode('value')">
-                                <span class="icon-tool icon-value"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-button' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_button')}"
-                                (click)="setMode('html_button')">
-                                <span class="icon-tool icon-button"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-select' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_select')}"
-                                (click)="setMode('html_select')">
-                                <span class="icon-tool icon-selectvalue"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-progress' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('gauge_progress')}"
-                                (click)="setMode('gauge_progress')">
-                                <span class="icon-tool icon-progress-v"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-semaphore' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('gauge_semaphore')}"
-                                (click)="setMode('gauge_semaphore')">
-                                <span class="icon-tool icon-semaphore"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-chart' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_chart')}"
-                                (click)="setMode('html_chart')">
-                                <span class="icon-tool icon-chart"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-bag' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_bag')}"
-                                (click)="setMode('html_bag')">
-                                <span class="icon-tool icon-bag"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-pipe' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('pipe')}"
-                                (click)="setMode('pipe')">
-                                <span class="icon-tool icon-pipe"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-slider' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_slider')}"
-                                (click)="setMode('html_slider')">
-                                <span class="icon-tool icon-slider"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-switch' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_switch')}"
-                                (click)="setMode('html_switch')">
-                                <span class="icon-tool icon-switch"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-graphbar' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_graph-bar')}"
-                                (click)="setMode('html_graph-bar')">
-                                <span class="icon-tool icon-graphbar"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-table' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('own_ctrl-table')}"
-                                (click)="setMode('own_ctrl-table')">
-                                <span class="icon-tool icon-table"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-iframe' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('own_ctrl-iframe')}"
-                                (click)="setMode('own_ctrl-iframe')">
-                                <span class="icon-tool icon-iframe"></span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-graphpie' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('html_graph-pie')}"
-                                (click)="setMode('html_graph-pie')">
-                                <span class="material-icon-tool material-icons">pie_chart</span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-image' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('own_ctrl-image')}"
-                                (click)="imageLink.value = '';imageLink.click()">
-                                <span class="material-icon-tool material-icons">photo_size_select_actual</span>
-                                <input #imageLink type="file" style="display: none;" (change)="onSetImageAsLink($event)" accept="image/png|jpg|svg" />
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-panel' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('own_ctrl-panel')}"
-                                (click)="setMode('own_ctrl-panel')">
-                                <span class="material-icon-tool material-icons" style="font-size: 25px;">web_asset</span>
-                            </div>
-                            <div class="svg-tool-button" matTooltip="{{'editor.controls-video' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('own_ctrl-video')}"
-                                (click)="setMode('own_ctrl-video')">
-                                <span class="material-icon-tool material-icons" style="font-size: 23px;">ondemand_video</span>
-                            </div>
-                        </div>
-                    </mat-expansion-panel>
-                    <!-- SHAPES -->
-                    <mat-expansion-panel *ngFor="let shGrp of shapesGrps" class="svg-workarea-leftbar-p" (opened)="panelsState[shGrp.name]=true;savePanelState()"
-                        (closed)="panelsState[shGrp.name]=false;savePanelState()" hideToggle="true" [expanded]="panelsState[shGrp.name]">
-                        <mat-expansion-panel-header class="svg-workarea-leftbar-h">
-                            <mat-panel-title>
-                                <mat-icon aria-label="Select" *ngIf="panelsState[shGrp.name]">expand_less</mat-icon>
-                                <mat-icon aria-label="Select" *ngIf="!panelsState[shGrp.name]">expand_more</mat-icon>
-                                <span>{{shGrp.name | translate}}</span>
-                            </mat-panel-title>
-                        </mat-expansion-panel-header>
-                        <div id="__tools_left" class="leftbar-panel h200">
-                            <div *ngFor="let shape of shGrp.shapes" style="margin-left: 3px;margin-right: 3px;" class="svg-tool-button"
-                                [ngClass]="{'svg-tool-active': isModeActive(shape.name)}" (click)="setMode(shape.name)">
-                                <span class="icon-tool" [style.backgroundImage]="'url(' + shape.ico + ')'"> </span>
-                            </div>
-                        </div>
-                    </mat-expansion-panel>
-                    <!-- WIDGETS -->
-                    <mat-expansion-panel class="svg-workarea-leftbar-p" (opened)="panelsState.panelWidgets=true;savePanelState()" (closed)="panelsState.panelWidgets=false;savePanelState()"
-                        hideToggle="true" [expanded]="panelsState.panelWidgets">
-                        <mat-expansion-panel-header class="svg-workarea-leftbar-h">
-                            <mat-panel-title>
-                                <mat-icon aria-label="Select" *ngIf="panelsState.panelWidgets">expand_less</mat-icon>
-                                <mat-icon aria-label="Select" *ngIf="!panelsState.panelWidgets">expand_more</mat-icon>
-                                <span>{{ 'resources.lib-widgets' | translate }}</span>
-                            </mat-panel-title>
-                            <mat-icon class="leftbar-edit-btn" (click)="onWidgetKiosk();$event.stopPropagation()">widgets</mat-icon>
-                        </mat-expansion-panel-header>
+                        <!-- ✅ EVERYTHING inside Electrical Toolkit -->
                         <ng-template matExpansionPanelContent>
-                            <app-lib-widgets>
-                            </app-lib-widgets>
+
+                            <mat-accordion multi="true">
+
+                                <!-- ✅ BASIC -->
+                                <mat-expansion-panel
+                                    class="svg-workarea-leftbar-p"
+                                    (opened)="panelsState.panelElectricalBasic = true; savePanelState()"
+                                    (closed)="panelsState.panelElectricalBasic = false; savePanelState()"
+                                    hideToggle="true"
+                                    [expanded]="panelsState.panelElectricalBasic">
+
+                                    <mat-expansion-panel-header class="svg-workarea-leftbar-h">
+                                        <mat-panel-title>
+                                            <mat-icon *ngIf="panelsState.panelElectricalBasic">expand_less</mat-icon>
+                                            <mat-icon *ngIf="!panelsState.panelElectricalBasic">expand_more</mat-icon>
+                                            <span>Protection</span>
+                                        </mat-panel-title>
+                                    </mat-expansion-panel-header>
+
+                                    <!-- ✅ Electrical Basic Shapes -->
+                                    <div id="__tools_left" class="leftbar-panel h200">
+
+                                        <ng-container *ngFor="let grp of electricalShapeGroups">
+                                            <ng-container *ngIf="grp.name === 'editor.electrical-basic'">
+
+                                                <div *ngFor="let shape of grp.shapes"
+                                                    class="svg-tool-button"
+                                                    [ngClass]="{'svg-tool-active': isModeActive(shape.name)}"
+                                                    (click)="setMode(shape.name)"
+                                                    [title]="getShapeLabel(shape.name)">
+
+                                                    <span class="icon-tool"
+                                                        [style.backgroundImage]="'url(' + shape.ico + ')'">
+                                                    </span>
+
+                                                </div>
+
+                                            </ng-container>
+                                        </ng-container>
+
+                                    </div>
+
+                                </mat-expansion-panel>
+
+                                <!-- electrical controls -->
+                                <mat-expansion-panel
+                                    class="svg-workarea-leftbar-p"
+                                    (opened)="panelsState.panelElectricalControls = true; savePanelState()"
+                                    (closed)="panelsState.panelElectricalControls = false; savePanelState()"
+                                    hideToggle="true"
+                                    [expanded]="panelsState.panelElectricalControls">
+
+                                    <mat-expansion-panel-header class="svg-workarea-leftbar-h">
+                                        <mat-panel-title>
+                                            <mat-icon *ngIf="panelsState.panelElectricalControls">expand_less</mat-icon>
+                                            <mat-icon *ngIf="!panelsState.panelElectricalControls">expand_more</mat-icon>
+                                            <span>Controls</span>
+                                        </mat-panel-title>
+                                    </mat-expansion-panel-header>
+
+                                    <!-- Controls list -->
+                                    <div id="__tools_left" class="leftbar-panel h200">
+                                        <!-- Wire Tool -->
+                                        
+                                        <div class="svg-tool-button" matTooltip="{{'editor.controls-wire' | translate}}" [ngClass]="{'svg-tool-active': isModeActive('pipe')}"
+                                            (click)="setMode('pipe')">
+                                            <span class="icon-tool icon-pipe"></span>
+                                        </div>
+                                    </div>
+
+                                </mat-expansion-panel>
+
+
+                                <mat-expansion-panel
+                                    class="svg-workarea-leftbar-p"
+                                    (opened)="panelsState.panelswitchingcontrol = true; savePanelState()"
+                                    (closed)="panelsState.panelswitchingcontrol = false; savePanelState()"
+                                    hideToggle="true"
+                                    [expanded]="panelsState.panelswitchingcontrol">
+
+                                    <mat-expansion-panel-header class="svg-workarea-leftbar-h">
+                                        <mat-panel-title>
+                                            <mat-icon *ngIf="panelsState.panelswitchingcontrol">expand_less</mat-icon>
+                                            <mat-icon *ngIf="!panelsState.panelswitchingcontrol">expand_more</mat-icon>
+                                            <span>Switching & Control</span>
+                                        </mat-panel-title>
+                                    </mat-expansion-panel-header>
+
+                                    <!-- switching & control list -->
+                                    <div id="__tools_left" class="leftbar-panel h200">
+                                        <ng-container *ngFor="let grp  of electricalShapeGroups">
+                                        <ng-container *ngIf="grp.name === 'editor.electrical.switchingcontrol'">
+
+                                            <div *ngFor="let shape of grp.shapes"
+                                                    class="svg-tool-button"
+                                                    [ngClass]="{'svg-tool-active': isModeActive(shape.name)}"
+                                                    (click)="setMode(shape.name)"  
+                                                    [title]="getShapeLabel(shape.name)">
+
+                                                    <span class="icon-tool"
+                                                        [style.backgroundImage]="'url(' + shape.ico + ')'">
+                                                    </span>
+
+                                            </div>
+
+                                        </ng-container>
+
+                                        </ng-container>
+                                        
+                                        
+                                    </div>
+
+                                </mat-expansion-panel>
+
+                                
+
+                            </mat-accordion>
+
                         </ng-template>
                     </mat-expansion-panel>
-                    <!-- RESOURCES -->
-                    <mat-expansion-panel class="svg-workarea-leftbar-p" hideToggle="true">
-                        <mat-expansion-panel-header class="svg-workarea-leftbar-h" style="max-height: 32px;height: 32px">
-                            <mat-panel-title>
-                                <mat-icon aria-label="Select" style="color: rgba(255,255, 255,0.4)">expand_more</mat-icon>
-                                <span>{{'editor.resources' | translate}}</span>
-                            </mat-panel-title>
-                            <mat-icon aria-label="Add" matTooltip="{{'editor.image-add' | translate}}" class="leftbar-edit-btn" (click)="onAddResource();$event.stopPropagation()">add
-                            </mat-icon>
-                        </mat-expansion-panel-header>
-                    </mat-expansion-panel>
                 </div>
+                
             </mat-accordion>
         </mat-drawer>
         <!-- END LEFT BAR -->
         <!-- WORK AREA -->
+        
         <mat-drawer-content>
+            
+
+            
             <!-- SVG-EDITOR -->
             <div [style.display]="(editorMode === editorModeType.SVG)?'block':'none' ">
                 <!-- RIGHT BAR -->
                 <div class="svg-tools-fly" [style.display]="(isAnySelected)?'block':'none' ">
+                    
                     <mat-expansion-panel class="svg-workarea-fly-p" (opened)="panelPropertyIdOpenState = true" (closed)="panelPropertyIdOpenState = false" hideToggle="true"
                         expanded="true" style="display:none">
                         <mat-expansion-panel-header class="svg-workarea-flybar-h">
@@ -631,6 +821,31 @@
                             </div>
                         </div>
                     </mat-expansion-panel>
+                    <mat-expansion-panel class="svg-workarea-fly-p"
+                        *ngIf="selectedWidget"
+                        (opened)="customAttrsPanelOpen = true"
+                        (closed)="customAttrsPanelOpen = false"
+                        hideToggle="true"
+                        expanded="false">
+
+                        <!-- <mat-expansion-panel-header class="svg-workarea-leftbar-h">
+                            <mat-panel-title>
+                            <mat-icon aria-label="Expand" *ngIf="customAttrsPanelOpen">expand_less</mat-icon>
+                            <mat-icon aria-label="Expand" *ngIf="!customAttrsPanelOpen">expand_more</mat-icon>
+                            {{ 'custom-attributes' | translate }}
+                            </mat-panel-title>
+                        </mat-expansion-panel-header> -->
+
+                        <!-- <div class="rightbar_panel custom-attrs-panel">
+                            <div class="manage-attributes">
+                            <button mat-stroked-button color="primary"
+                                    (click)="openAddAttrModal()"
+                                    [disabled]="!selectedWidget">
+                                Manage Attributes
+                            </button>
+                            </div>
+                        </div> -->
+                    </mat-expansion-panel>
                     <mat-expansion-panel id="interaction_panel" class="svg-workarea-fly-p" [style.display]="(selectedElement)?'block':'none'" (opened)="panelEventOpenState = true"
                         (closed)="panelEventOpenState = false" hideToggle="true" expanded="true">
                         <mat-expansion-panel-header class="svg-workarea-leftbar-h">
@@ -647,7 +862,7 @@
                 </div>
                 <!-- END RIGHT BAR -->
                 <!-- Work Area -->
-                <div id="svg_editor" style="z-index:-1">
+                <div id="svg_editor" >
                     <!-- Rules bar -->
                     <div id="rulers">
                         <div id="ruler_corner"></div>
@@ -670,14 +885,60 @@
                         </div>
                     </div>
                     <!-- END Draw Area -->
+                    
+                    
                     <!-- Draw top tool bar -->
                     <div id="tools_top" class="tools_panel">
+                        
                         <div id="editor_panel">
                             <div class="main-btn-sep"></div>
                             <button mat-button matTooltip="{{'editor.tools-launch-title' | translate}}" class="main-btn" (click)="onStartCurrent()">
                                 <mat-icon aria-label="Launch Current View">play_arrow</mat-icon>
+                                
                             </button>
                             <div class="main-btn-sep"></div>
+
+                            <div class="Generate-BOM">
+                            <button 
+                                mat-button 
+                                matTooltip="Generate BOM" 
+                                class="main-btn"
+                                (click)="openBOMModal()">
+                                BOM
+                            </button>
+                            </div>
+
+                            <button
+                                mat-button
+                                class="main-btn"
+                                matTooltip="{{'editor.tools-palettecolor-title' | translate}}"
+                                [matMenuTriggerFor]="paletteMenu"
+                                #paletteMenuTrigger="matMenuTrigger">
+                                <mat-icon aria-label="Palette">palette</mat-icon>
+                                </button>
+
+                                <mat-menu
+                                #paletteMenu="matMenu"
+                                panelClass="palette-menu-panel"
+                                [overlapTrigger]="false">
+
+                                <div class="palette-grid">
+                                    <button
+                                    mat-button
+                                    *ngFor="let color of defaultColor"
+                                    class="palette-swatch"
+                                    disableRipple
+                                    (click)="onPaletteColorSelected(color, $event)"
+                                    [style.background]="color"
+                                    [attr.aria-label]="'Select color ' + color">
+                                    </button>
+                                </div>
+
+                                <div class="palette-menu-hint">
+                                    Click = fill · Shift+Click = stroke
+                                </div>
+                                </mat-menu>
+
                             <button mat-button matTooltip="{{'editor.tools-zoom-title' | translate}}" class="main-btn" (click)="onZoomSelect()">
                                 <mat-icon aria-label="Zoom Tool [Ctrl+Up/Down]">zoom_in</mat-icon>
                             </button>
@@ -692,6 +953,7 @@
                                 <button mat-button id="tool_redo" matTooltip="{{'editor.tools-redo-title' | translate}}" class="main-btn">
                                     <mat-icon aria-label="Redo [Y]">redo</mat-icon>
                                 </button>
+                                
                             </div>
                         </div>
                         <div id="selected_panel">
@@ -711,6 +973,16 @@
                             <button mat-button id="tool_make_link" matTooltip="{{'editor.tools-hyperlink-title' | translate}}" class="main-btn" (click)="onMakeHyperlink()">
                                 <mat-icon style="font-size: 28px;">link</mat-icon>
                             </button>
+                            <div class="manage-attributes">
+                            <button 
+                                mat-button 
+                                matTooltip="Open Attributes" class="main-btn"
+                                    (click)="openAddAttrModal()"
+                                    [disabled]="!selectedWidget">
+                                Attr
+                            </button>
+                            </div>
+                            
                         </div>
                         <div id="multiselected_panel">
                             <div class="main-btn-sep"></div>
@@ -759,7 +1031,17 @@
                             <button mat-button matTooltip="{{'editor.tools-svg-selector' | translate}}" (click)="svgSelectorPanel.toggle()" class="main-btn">
                                 <mat-icon style="font-size: 28px;">list</mat-icon>
                             </button>
+                            
+                            <!-- NEW BUTTON FOR REFERENCE VIEWER -->
+                            <button mat-button matTooltip="Open Reference Viewer"
+                                    (click)="referencePanel.toggle()" class="main-btn">
+                                <mat-icon style="font-size: 28px;">visibility</mat-icon>
+                            </button>
+                            
+                            
                         </div>
+                        
+                        
                     </div>
                     <!-- tools_top -->
                     <div id="cur_context_panel">
@@ -815,11 +1097,11 @@
                             </div>
                         </div>
 
-                        <div id="tools_bottom_3" class="colors-palette">
-                            <div id="palette_holder">
-                                <div id="palette" matTooltip="{{'editor.tools-palettecolor-title' | translate}}"></div>
-                            </div>
-                        </div>
+                            <!-- <div id="tools_bottom_3" class="colors-palette">
+                                <div id="palette_holder">
+                                    <div id="palette" matTooltip="{{'editor.tools-palettecolor-title' | translate}}"></div>
+                                </div>
+                            </div> -->
                     </div>
 
                     <div id="option_lists" class="dropdown">
@@ -856,9 +1138,10 @@
                 </ng-container>
             </div>
         </mat-drawer-content>
+        
         <!-- work area END -->
     </mat-drawer-container>
-
+    
     <!-- svg_editor -->
 
     <!-- NOT USED -->
@@ -1120,3 +1403,4 @@
     <!-- layers context menu END -->
     <div #svgpreview class="svg-preview"></div>
 </div>
+

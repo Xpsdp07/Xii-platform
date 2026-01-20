@@ -27,7 +27,7 @@ module.exports = {
                 next();
             }
         });
-
+        
         /**
          * GET Project data
          * Take from project storage and reply
@@ -234,6 +234,81 @@ module.exports = {
             }
         });
 
+        prjApp.post('/api/projects', secureFnc , function (req,res,next) {
+            const permission = checkGroupsFnc(req);
+            if (res.statusCode === 403) {
+                runtime.logger.error("api post projects: Tocken Expired");
+            } else if (!authJwt.haveAdminPermission(permission)) {
+                res.status(401).json({error:"unauthorized_error", message: "Unauthorized!"});
+                runtime.logger.error("api post projects: Unauthorized");
+            } else {
+                runtime.project.setProjects(req.body).then(function(data) {
+                        runtime.restart(true).then(function(result) {
+                            res.end();
+                    });
+                }).catch(function(err) {
+                    if (err && err.code) {
+                        res.status(400).json({error:err.code, message: err.message});
+                        runtime.logger.error("api post project: " + err.message);
+                    } else {
+                        res.status(400).json({error:"unexpected_error", message: err});
+                        runtime.logger.error("api post project: " + err);
+                    }
+                });
+            }
+        });
+           
+        prjApp.get("/api/projects", secureFnc, function(req, res) {
+            const permission = checkGroupsFnc(req);
+            if (res.statusCode === 403) {
+                runtime.logger.error("api get projects: Tocken Expired");
+            } else if (!authJwt.haveAdminPermission(permission)) {
+                res.status(401).json({error:"unauthorized_error", message: "Unauthorized!"});
+                runtime.logger.error("api get projects: Unauthorized");
+            } else {
+                runtime.project.getProjects().then(result => {
+                    if (result) {
+                        res.json(result);
+                    } else {
+                        res.end();
+                    }
+                }).catch(function(err) {
+                    if (err && err.code) {
+                        res.status(400).json({error:err.code, message: err.message});
+                        runtime.logger.error("api get projects: " + err.message);
+                    } else {
+                        res.status(400).json({error:"unexpected_error", message: err});
+                        runtime.logger.error("api get projects: " + err);
+                    }
+                });
+            }
+        });
+
+        prjApp.delete("/api/projects", secureFnc, function(req, res, next) {
+            const permission = checkGroupsFnc(req);
+            if (res.statusCode === 403) {
+                runtime.logger.error("api delete project: Tocken Expired");
+            } else if (!authJwt.haveAdminPermission(permission)) {
+                res.status(401).json({error:"unauthorized_error", message: "Unauthorized!"});
+                runtime.logger.error("api delete project: Unauthorized");
+            } else {
+                runtime.project.deleteProject(req.query).then(result => {
+                    if (result) {
+                        res.json(result);
+                    } else {
+                        res.end();
+                    }
+                }).catch(function(err) {
+                    if (err && err.code) {
+                        res.status(400).json({error:err.code, message: err.message});
+                        runtime.logger.error("api delete project: " + err.message);
+                    } else {
+                        res.status(400).json({error:"unexpected_error", message: err});
+                        runtime.logger.error("api delete project: " + err);
+                    }
+                });
+            }
+        });
         return prjApp;
     }
 }

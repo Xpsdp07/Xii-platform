@@ -5,8 +5,13 @@ import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef, MAT_L
 import { MatDrawer } from '@angular/material/sidenav';
 import { DomSanitizer } from '@angular/platform-browser';
 import { MatIconRegistry } from '@angular/material/icon';
+import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { Subject, Subscription, switchMap, takeUntil } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
+
+//custom attributes 
+import { AddCustomAttrDialogComponent } from './add-custom-attr-dialog/add-custom-attr-dialog.component';
+
 
 import { ProjectService, SaveMode } from '../_services/project.service';
 import { Hmi, View, GaugeSettings, SelElement, LayoutSettings, ViewType, ISvgElement, GaugeProperty, DocProfile } from '../_models/hmi';
@@ -43,6 +48,12 @@ import { MapsViewComponent } from '../maps/maps-view/maps-view.component';
 import { KioskWidgetsComponent } from '../resources/kiosk-widgets/kiosk-widgets.component';
 import { ResourcesService } from '../_services/resources.service';
 
+
+import { BomModalComponent } from './bom/bom-selector.component';
+import { GaugesUtils } from '../gauges/gauges-utils';
+import { Router } from '@angular/router';
+
+
 declare var Gauge: any;
 
 declare var $: any;
@@ -55,6 +66,7 @@ declare var initContextmenu: any;
 declare var mysvgcanvas: any;
 declare var mysvgeditor: any;
 
+
 @Component({
     templateUrl: 'editor.component.html',
     styleUrls: ['editor.component.css']
@@ -66,15 +78,112 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild('cardsview', {static: false}) cardsview: CardsViewComponent;
     @ViewChild('sidePanel', {static: false}) sidePanel: MatDrawer;
     @ViewChild('svgSelectorPanel', {static: false}) svgSelectorPanel: MatDrawer;
+    @ViewChild('referencePanel') referencePanel: MatDrawer;
     @ViewChild('svgpreview', {static: false}) svgPreview: ElementRef;
     @ViewChild('mapsView', {static: false}) mapsView: MapsViewComponent;
+    @ViewChild('paletteMenuTrigger', {static: false}) paletteMenuTrigger: MatMenuTrigger;
+
+
+
+// custom attributes section
+    customAttrsPanelOpen = false;
+
+    // Helper to get the selected GaugeSettings instance safely
+    get selectedWidget(): GaugeSettings | null {
+    return this.selectedElement ? this.getGaugeSettings(this.selectedElement) : null;
+    }
+
+    // Add this helper method here
+    objectKeys(obj: any): string[] {
+        return obj ? Object.keys(obj) : [];
+    }
+
+    // Get customAttributes dictionary for selected widget or empty object
+    get customAttributes(): { [key: string]: any } {
+        const widget = this.selectedWidget;
+        if (!widget) {return {};}
+        if (!widget.customAttributes) {
+            widget.customAttributes = {};
+        }
+        return widget.customAttributes;
+    }
+
+
+
+    
+
+
+
+
+
+
+    // Returns keys of customAttributes dictionary
+    customAttributesKeys(): string[] {
+    return Object.keys(this.customAttributes);
+    }
+
+    openAddAttrModal() {
+        console.log('hi hello',this.selectedWidget?.id);
+
+        if (!this.selectedWidget) {return;}
+
+        // Open Angular Material Dialog
+        const dialogRef = this.dialog.open(AddCustomAttrDialogComponent, {
+            width: '1000px',
+            data: { 
+                widget: this.selectedWidget,
+                svgElements: this.svgElements  // ✅ pass your main svgElements list
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            console.log('Dialog Result:', result);
+
+            // If no attributes were added or dialog was cancelled
+            if (!result || result.length === 0) {return;}
+
+            // Ensure we have a selected widget
+            if (!this.selectedWidget) {
+                console.error('No selected widget found.');
+                return;
+            }
+
+            // Ensure customAttributes exists
+            if (!this.selectedWidget.customAttributes) {
+                this.selectedWidget.customAttributes = {};
+            }
+
+            // Add each attribute safely
+            result.forEach(attr => {
+                if (!attr.name) {
+                    console.error("Attribute name missing for:", attr);
+                    return;
+                }
+
+                // ✅ Store both UNIT(type) and VALUE
+                this.selectedWidget.customAttributes[attr.name] = {
+                    type: attr.type ?? "",
+                    value: attr.value ?? ""
+                };
+            });
+
+            console.log('Updated Widget Custom Attributes:', this.selectedWidget.customAttributes);
+
+            
+            });
+            
+    }
+// custom attributes section
 
     svgElementSelected: ISvgElement = null;
     svgElements: ISvgElement[] = [];
     gaugeDialogType = GaugeDialogType;
     gaugeDialog = { type: null, data: null };
     reloadGaugeDialog: boolean;
+    // custom filtering 
 
+
+    
     readonly colorDefault = { fill: '#FFFFFF', stroke: '#000000' };
     fonts = Define.fonts;
     isLoading = true;
@@ -97,6 +206,11 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
         panelView: true,
         panelViewHeight: 200,
         panelGeneral: true,
+        panelElectricalToolKit: false,
+        panelElectricalBasic: false,
+        panelElectricalControls: false,
+        panelswitchingcontrol:false,
+        panelGeneralToolkit:false,
         panelC: true,
         panelD: true,
         panelS: true,
@@ -116,7 +230,10 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
     cardViewType = ViewType.cards;
     svgViewType = ViewType.svg;
     mapsViewType = ViewType.maps;
+    // custom
     shapesGrps = [];
+    normalShapeGroups = [];
+    electricalShapeGroups = [];
     private gaugesRef = {};
 
     private subscriptionSave: Subscription;
@@ -126,6 +243,7 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
     constructor(private projectService: ProjectService,
         private winRef: WindowRef,
         public dialog: MatDialog,
+        private router: Router,
         private changeDetector: ChangeDetectorRef,
         private translateService: TranslateService,
         public gaugesManager: GaugesManager,
@@ -140,17 +258,92 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
         mdIconRegistry.addSvgIcon('to_top', sanitizer.bypassSecurityTrustResourceUrl('/assets/images/to-top.svg'));
     }
 
+    // custom added 
+    onSectionSelect(section: string): void {
+        if (section === 'controls') {
+            this.router.navigate(['/controls']);
+        }
+    }
+
+
+    openBOMModal() {
+        console.log("🧾 [BOM] SVG Elements and Custom Attributes:");
+
+        if (!this.svgElements || this.svgElements.length === 0) {
+            console.warn("⚠️ No SVG elements found.");
+            return;
+        }
+
+        const svgRoot = document.querySelector('svg');
+        let textElementIds: string[] = [];
+
+        if (svgRoot) {
+            const textElements = svgRoot.querySelectorAll('text');
+            textElements.forEach((el: any) => {
+                const id = el.id || '';
+                const text = el.textContent?.trim() || '';
+                if (id && text.length > 0) textElementIds.push(id);
+            });
+        }
+
+        const filteredElements = this.svgElements.filter((el: any) => {
+            const tag = (el.tagName || el.type || '').toLowerCase();
+            const isTextElement = tag === 'text' || textElementIds.includes(el.id);
+            return !isTextElement;
+        });
+
+        const currentView = this.getView(this.currentView?.name || '');
+        const items = currentView?.items || {};
+        const savedBom = currentView?.bom || []; // ← GET SAVED BOM HERE
+
+        // convert saved BOM list into map for quick lookup
+        const savedMap = new Map(savedBom.map((b: any) => [b.id, b]));
+
+        // merge svgElements with savedBOM
+        const enrichedElements = filteredElements.map((el: any, i) => {
+            let matchedItem = Object.values(items).find((item: any) => item.id === el.id);
+            const saved = savedMap.get(el.id);    // ← CHECK IF SAVED BOM EXISTS
+            return {
+                id: el.id,
+                name: el.name || '',
+                customAttributes: matchedItem?.customAttributes || {},
+                slno: saved?.slno || i + 1,
+                quantity: saved?.quantity ?? 1,
+                remarks: saved?.remarks ?? ''
+            };
+        });
+
+        const dialogRef = this.dialog.open(BomModalComponent, {
+            width: '1000px',
+            panelClass: 'custom-bom-modal',
+            data: {
+                svgElements: enrichedElements,
+                viewName: this.currentView?.name,
+            }
+        });
+
+        dialogRef.afterClosed().subscribe((savedBOM) => {
+            if (savedBOM) {
+                console.log('✅ BOM saved from modal:', savedBOM);
+                this.currentView.bom = savedBOM; // store BOM in view (runtime)
+            }
+        });
+    }
+    
+
     //#region Implemented onInit / onAfterInit event
     /**
      * Init Save Project event and clear gauge memory (to manage event signal/gauge)
      */
     ngOnInit() {
+
         try {
             this.subscriptionSave = this.projectService.onSaveCurrent.subscribe((mode: SaveMode) => {
                 if (mode === SaveMode.Current) {
                     this.onSaveProject();
                 } else if (mode === SaveMode.SaveAs) {
-                    this.projectService.saveAs();
+                    // this.projectService.saveAs();
+                    this.projectService.saveAsToDB();
                 } else if (mode === SaveMode.Save) {
                     this.onSaveProject(true);
                 }
@@ -254,6 +447,25 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
                         this.setMode('select', false);
                     }, 700);
                     this.checkSvgElementsMap(true);
+                    // 🔹 Custom handling for your sbr-block
+                    if (eleadded && eleadded.getAttribute && eleadded.getAttribute('type') === 'sbr-block') {
+                        setTimeout(() => {
+                            const editor = this.winRef.nativeWindow.svgEditor;
+                            if (editor.gaugesManager && typeof editor.gaugesManager.instantiateGaugeComponent === 'function') {
+                                editor.gaugesManager.instantiateGaugeComponent(eleadded, (window as any).SbrBlockComponentRef);
+                            }
+                        }, 50);
+                    }
+                    if (eleadded && eleadded.getAttribute && eleadded.getAttribute('type') === 'hidrec-block') {
+                        setTimeout(() => {
+                            const editor = this.winRef.nativeWindow.svgEditor;
+                            if (editor.gaugesManager && typeof editor.gaugesManager.instantiateGaugeComponent === 'function') {
+                                editor.gaugesManager.instantiateGaugeComponent(eleadded, (window as any).HidrecComponentRef);
+                            }
+                        }, 50);
+                    }
+
+
                 },
                 (eleremoved) => {
                     this.onRemoveElement(eleremoved);
@@ -274,6 +486,7 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
             );
 
             this.winRef.nativeWindow.svgEditor.init();
+
             $(initContextmenu);
 
         } catch (err) {
@@ -317,42 +530,42 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
         this.svgPreview.nativeElement.style.display = (value.preview) ? 'flex' : 'none';
     }
 
-    /**
-     * Load the hmi resource and bind it
-     */
-    private loadHmi() {
-        this.gaugesManager.initGaugesMap();
-        this.currentView = null;
-        this.hmi = this.projectService.getHmi();
-        // check new hmi
-        if (!this.hmi.views || this.hmi.views.length <= 0) {
-            this.hmi.views = [];
-            this.addView();
-            // this.selectView(this.hmi.views[0].name);
-        } else {
-            let oldsel = localStorage.getItem('@frango.webeditor.currentview');
-            if (!oldsel && this.hmi.views.length) {
-                oldsel = this.hmi.views[0].name;
-            }
-            for (let i = 0; i < this.hmi.views.length; i++) {
-                if (this.hmi.views[i].name === oldsel && this.hmi.views[i].type !== ViewType.maps) {
-                    this.onSelectView(this.hmi.views[i]);
-                    break;
+        /**
+         * Load the hmi resource and bind it
+         */
+        private loadHmi() {
+            this.gaugesManager.initGaugesMap();
+            this.currentView = null;
+            this.hmi = this.projectService.getHmi();
+            // check new hmi
+            if (!this.hmi.views || this.hmi.views.length <= 0) {
+                this.hmi.views = [];
+                this.addView();
+                // this.selectView(this.hmi.views[0].name);
+            } else {
+                let oldsel = localStorage.getItem('@frango.webeditor.currentview');
+                if (!oldsel && this.hmi.views.length) {
+                    oldsel = this.hmi.views[0].name;
+                }
+                for (let i = 0; i < this.hmi.views.length; i++) {
+                    if (this.hmi.views[i].name === oldsel && this.hmi.views[i].type !== ViewType.maps) {
+                        this.onSelectView(this.hmi.views[i]);
+                        break;
+                    }
+                }
+                if (!this.currentView) {
+                    this.onSelectView(this.hmi.views[0]);
                 }
             }
-            if (!this.currentView) {
-                this.onSelectView(this.hmi.views[0]);
-            }
-        }
-        this.hmi.layout = <LayoutSettings>Utils.mergeDeep(new LayoutSettings(), this.hmi.layout);
+            this.hmi.layout = <LayoutSettings>Utils.mergeDeep(new LayoutSettings(), this.hmi.layout);
 
-        // check and set start page
-        if (!this.hmi.layout.start) {
-            this.hmi.layout.start = this.hmi.views[0].id;
+            // check and set start page
+            if (!this.hmi.layout.start) {
+                this.hmi.layout.start = this.hmi.views[0].id;
+            }
+            this.loadPanelState();
+            this.isLoading = false;
         }
-        this.loadPanelState();
-        this.isLoading = false;
-    }
 
     /**
      * Set or Add the View to Project
@@ -391,12 +604,51 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
      * Take shapes from svg-editor to show in panel
      */
     private setShapes() {
-        let temp = this.winRef.nativeWindow.svgEditor.getShapes();
-        let grps = [];
+        const temp = this.winRef.nativeWindow.svgEditor.getShapes();
+        const allGroups = [];
+
         Object.keys(temp).forEach(grpk => {
-            grps.push({ name: grpk, shapes: temp[grpk] });
-        }),
-        this.shapesGrps = grps;
+            allGroups.push({ name: grpk, shapes: temp[grpk] });
+        });
+
+        // ✅ NORMAL SHAPES
+        this.normalShapeGroups =
+            allGroups.filter(g => !g.name.startsWith('editor.electrical'));
+
+        // ✅ ELECTRICAL SHAPES
+        this.electricalShapeGroups =
+            allGroups.filter(g => g.name.startsWith('editor.electrical'));
+
+        // ✅ DEBUG OUTPUT (THIS IS THE KEY)
+        // console.log('ELECTRICAL SHAPE GROUPS:', this.electricalShapeGroups);
+        // console.log(
+        //     'ELECTRICAL GROUP NAMES:',
+        //     this.electricalShapeGroups.map(g => g.name)
+        // );
+
+        // ✅ Optional
+        this.shapesGrps = allGroups;
+    }
+
+    /**
+     * Returns a human-friendly label for a shape
+     */
+    getShapeLabel(shapeName: string): string {
+        if (!shapeName) {
+            return '';
+        }
+
+        // remove internal prefix if present
+        const cleanName = shapeName
+            .replace('shapes-', '')
+            .replace(/_/g, ' ')
+            .trim();
+
+        // Capitalize
+        return cleanName
+            .split(' ')
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' ');
     }
 
     /**
@@ -514,18 +766,24 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
     private loadView(view: View) {
         if (view) {
             this.clearEditor();
+
             if (this.isSvgEditMode(this.editorMode)) {
                 let svgcontent = '';
                 let v = this.getView(view.name);
+
                 if (v) {
                     svgcontent = v.svgcontent;
                 }
+
                 if (svgcontent.length <= 0) {
-                    svgcontent = '<svg id="' + view.name + '" width="' + view.profile.width + '" height="' + view.profile.height +
+                    svgcontent =
+                        '<svg id="' + view.name + '" width="' + view.profile.width + '" height="' + view.profile.height +
                         '" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">' +
-                        '<filter id="blur-filter" x="-3" y="-3" width="200" height="200"><feGaussianBlur in="SourceGraphic" stdDeviation="3" /></filter>' +
+                        '<filter id="blur-filter" x="-3" y="-3" width="200" height="200">' +
+                        '<feGaussianBlur in="SourceGraphic" stdDeviation="3" /></filter>' +
                         '<g><title>Layer 1</title></g></svg>';
                 }
+
                 if (this.winRef.nativeWindow.svgEditor) {
                     this.winRef.nativeWindow.svgEditor.setDocProperty(view.name, view.profile.width, view.profile.height, view.profile.bkcolor);
                     this.winRef.nativeWindow.svgEditor.setSvgString(svgcontent);
@@ -533,19 +791,60 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
 
                 // check gauge to init
                 this.gaugesRef = {};
+
                 setTimeout(() => {
                     for (let key in v.items) {
-                        let ga: GaugeSettings = this.getGaugeSettings(v.items[key]);
+                        let item = v.items[key];
+                        let ga: GaugeSettings = this.getGaugeSettings(item);
                         this.checkGaugeAdded(ga);
+
+                        if (item && item.id) {
+                            if (typeof item.customAttributes === 'string') {
+                                try {
+                                    item.customAttributes = JSON.parse(item.customAttributes);
+                                } catch (e) {
+                                    // console.warn(`⚠️ Could not parse customAttributes for ${item.id}:`, e);
+                                }
+                            }
+
+                            if (item.customAttributes && Object.keys(item.customAttributes).length > 0) {
+                                // console.log(`🧩 SVG Element ID: ${item.id}`);
+                                // console.log('Custom Attributes:', item.customAttributes);
+                            } else {
+                                // console.log(`⚠️ No customAttributes found for ${item.id}`);
+                            }
+                        }
                     }
+
                     this.winRef.nativeWindow.svgEditor.refreshCanvas();
                     this.checkSvgElementsMap(true);
+                    // console.log("🧾 SVG Elements Map (after load):", this.svgElements);
+
+                    // ✅ NEW: Log all <svg> child elements from the DOM
+                    const svgRoot = document.querySelector('svg');
+                    if (svgRoot) {
+                        const allElements = svgRoot.querySelectorAll('*'); // gets all tags inside SVG
+                        // console.log(`🎨 Total SVG elements found: ${allElements.length}`);
+                        allElements.forEach((el: any, i: number) => {
+                            // console.log(`\n#${i + 1} — <${el.tagName}>`);
+                            // console.log("ID:", el.id || '(no id)');
+                            // console.log("Type:", el.getAttribute('type') || '(no type)');
+                            // console.log("Text content:", el.textContent?.trim() || '(no text)');
+                        });
+                    } else {
+                        console.warn("⚠️ No <svg> root found in DOM.");
+                    }
+
                     this.winRef.nativeWindow.svgEditor.resetUndoStack();
                 }, 500);
-            } else if (this.isCardsEditMode(this.editorMode) && this.cardsview) {
+            }
+
+            else if (this.isCardsEditMode(this.editorMode) && this.cardsview) {
                 this.cardsview.view = view;
                 this.cardsview.reload();
-            } else if (this.isMapsEditMode(this.editorMode) && this.mapsView) {
+            }
+
+            else if (this.isMapsEditMode(this.editorMode) && this.mapsView) {
                 this.mapsView.view = view;
                 this.mapsView.reload();
             }
@@ -696,6 +995,24 @@ export class EditorComponent implements OnInit, AfterViewInit, OnDestroy {
     onChangeFillColor(event) {
         this.setFillColor(event);
         this.checkMySelectedToSetColor(this.colorFill, null, this.winRef.nativeWindow.svgEditor.getSelectedElements());
+    }
+
+    onPaletteColorSelected(color: string, event: MouseEvent) {
+        event.preventDefault();
+        if (event.shiftKey) {
+            this.colorStroke = color;
+            this.setStrokeColor(this.colorStroke);
+            this.checkMySelectedToSetColor(null, this.colorStroke, this.winRef.nativeWindow.svgEditor.getSelectedElements());
+        } else {
+            this.colorFill = color;
+            this.setFillColor(this.colorFill);
+            this.checkMySelectedToSetColor(this.colorFill, null, this.winRef.nativeWindow.svgEditor.getSelectedElements());
+        }
+        this.closePaletteMenu();
+    }
+
+    private closePaletteMenu() {
+        this.paletteMenuTrigger?.closeMenu();
     }
 
     /**
@@ -1631,4 +1948,11 @@ interface PanelsStateType {
     panelD?: boolean;
     panelS?: boolean;
     panelWidgets?: boolean;
+    panelElectricalToolKit?: boolean;
+    panelElectricalBasic?: boolean;
+    panelGeneralToolkit?: boolean;
+    panelElectricalControls?:boolean;
+    panelswitchingcontrol?:boolean;
 }
+
+

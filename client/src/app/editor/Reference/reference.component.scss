@@ -1,0 +1,39 @@
+.right-viewer {
+  padding: 15px;
+  color: white;
+}
+
+.view-selector {
+  width: 90%;
+  margin-top: 10px;
+}
+
+.import-row {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.viewer-wrapper {
+  width: 100%;
+  height: calc(100vh - 200px);
+  border: 1px solid #444;
+  overflow: hidden;
+  position: relative;
+  background: #1e1e1e;
+}
+
+.canvas-viewport {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.canvas-stage {
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.canvas svg {
+  pointer-events: none; // disable accidental clicks on viewer
+}

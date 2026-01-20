@@ -1,0 +1,24 @@
+<form [formGroup]="formGroup" class="container">
+    <h1 mat-dialog-title class="dialog-title" mat-dialog-draggable>{{'dlg.project-title' | translate }}</h1>
+    <mat-icon (click)="onClose()" class="dialog-close-btn">clear</mat-icon>
+    <div class="my-form-field" style="display: block;">
+        <span>{{'dlg.project-name' | translate }}</span>
+        <input formControlName="name" type="text" style="width: 100%;">
+    </div>
+    <div class="mb10" style="height: 20px;">
+      <div class="message-error" *ngIf="formGroup.get('name')?.hasError('required')">
+        <span>{{ 'msg.project-missing-name' | translate }}</span>
+      </div>
+      <div class="message-error" *ngIf="formGroup.get('name')?.hasError('msg')">
+        <span>{{ formGroup.get('name')?.errors?.msg }}</span>
+      </div>
+    </div>
+    <div mat-dialog-actions class="dialog-action">
+        <button mat-raised-button (click)="onClose()">
+            {{'dlg.cancel' | translate}}
+        </button>
+        <button mat-raised-button [disabled]="formGroup.invalid" color="primary" (click)="onCreate()">
+            {{'dlg.ok' | translate}}
+        </button>
+    </div>
+</form>

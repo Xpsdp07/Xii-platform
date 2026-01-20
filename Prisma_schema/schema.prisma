@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  username   String    @unique
+  fullName   String?
+  password   String
+  groups     UserGroup[]
+  modules   UserModule[] 
+  info       String    @default("")
+  createdAt  DateTime  @default(now())
+}
+
+model Group {
+  id               Int @id @default(autoincrement())
+  name             String @unique
+  un               Int?
+  super_un         Int?
+  GroupPermissions GroupJunction[]
+  modulePermissions GroupModulePermission[]
+  users            UserGroup[]
+}
+
+model GroupPermission {
+  id           Int              @id @default(autoincrement())
+  name         String           @unique
+  groupJunctions GroupJunction[]
+}
+
+model GroupJunction {
+  id                  Int @id @default(autoincrement())
+  group               Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId             Int
+  GroupPermission     GroupPermission @relation(fields: [GroupPermissionId], references: [id], onDelete: Cascade)
+  GroupPermissionId   Int
+
+  @@unique([groupId, GroupPermissionId])
+}
+
+model Module {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique
+  un          Int?
+  super_un    Int?
+  permissions ModuleJunction[]
+  groupPermissions GroupModulePermission[]
+  userLinks  UserModule[]
+}
+
+model ModulePermission {
+  id    Int               @id @default(autoincrement())
+  name  String            @unique
+  modules ModuleJunction[]
+  groupLinks GroupModulePermission[]
+}
+
+model ModuleJunction {
+  id           Int              @id @default(autoincrement())
+  module       Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  moduleId     Int
+  permission   ModulePermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId Int
+
+  @@unique([moduleId, permissionId])
+}
+model UserModule {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  moduleId  Int
+  un        BigInt?
+  super_un  BigInt?
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module    Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+}
+
+model UserGroup {
+  id      Int   @id @default(autoincrement())
+  userId  Int
+  groupId Int
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+}
+
+model GroupModulePermission {
+  id           Int              @id @default(autoincrement())
+  groupId      Int
+  moduleId     Int
+  permissionId Int
+
+  group        Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  module       Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  permission   ModulePermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, moduleId, permissionId])
+}
